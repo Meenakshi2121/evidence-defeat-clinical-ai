@@ -196,6 +196,11 @@ def test_defaults_and_nuisance_predictions_are_outer_fold_specific(
     assert np.isfinite(evaluation.scaled_utility).all()
     for fold in evaluation.folds:
         in_fold = evaluation.fold_ids == fold.fold_id
+        training_count = int((~in_fold).sum())
+        assert fold.training_mu0.shape == (training_count,)
+        assert fold.training_mu1.shape == (training_count,)
+        assert np.isfinite(fold.training_mu0).all()
+        assert np.isfinite(fold.training_mu1).all()
         assert np.unique(evaluation.default_action[in_fold]).tolist() == [
             fold.default_action
         ]

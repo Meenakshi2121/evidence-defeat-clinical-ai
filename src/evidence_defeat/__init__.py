@@ -1,5 +1,9 @@
 """Evidence-defeat framework for responsible treatment-policy deferral."""
 
+from evidence_defeat.bootstrap import (
+    StratifiedBootstrapSample,
+    treatment_stratified_bootstrap,
+)
 from evidence_defeat.checks import (
     DecisionCertaintyResult,
     ModelMultiplicityResult,
@@ -21,7 +25,9 @@ from evidence_defeat.diagnostics import (
     canonical_sha256,
     configuration_hashes,
     execute_diagnostic_run,
+    package_versions,
     plan_smoke_runs,
+    process_peak_rss_mb,
     repository_state,
     select_smoke_run,
     simulation_data_sha256,
@@ -37,6 +43,14 @@ from evidence_defeat.evaluation import (
     evaluate_cross_fitted_policies,
     fit_outer_fold_policy_nuisance,
     select_population_default,
+)
+from evidence_defeat.feasibility import (
+    TimingFingerprint,
+    TimingRunReport,
+    TimingRunSpec,
+    execute_timing_run,
+    plan_stage_b_runs,
+    select_stage_b_run,
 )
 from evidence_defeat.folds import OuterFold, iter_outer_folds, make_outer_fold_ids
 from evidence_defeat.known_truth import (
@@ -54,6 +68,7 @@ from evidence_defeat.learners import (
     LearnerSeeds,
     TreatmentEffectPredictions,
     build_outcome_regression,
+    fit_predict_effect_learner,
     fit_predict_prespecified_learners,
 )
 from evidence_defeat.pipeline import (
@@ -63,6 +78,14 @@ from evidence_defeat.pipeline import (
     construct_outer_fold,
     run_cross_fitted_construction,
     scale_training_utility,
+)
+from evidence_defeat.policy_disagreement import (
+    CrossFittedPolicyDisagreement,
+    FoldPolicyDisagreement,
+    NearOptimalSelection,
+    policy_vote_disagreement,
+    run_cross_fitted_policy_disagreement,
+    select_near_optimal_candidates,
 )
 from evidence_defeat.preprocessing import (
     CovariateSchema,
@@ -91,11 +114,13 @@ __all__ = [
     "ESTIMATOR_ORDER",
     "CovariateSchema",
     "CrossFittedConstruction",
+    "CrossFittedPolicyDisagreement",
     "CrossFittedPolicyEvaluation",
     "DecisionCertaintyResult",
     "DiagnosticRunReport",
     "FittedPreprocessor",
     "FoldConstruction",
+    "FoldPolicyDisagreement",
     "FoldPolicyNuisance",
     "GateSelections",
     "GitState",
@@ -104,6 +129,7 @@ __all__ = [
     "KnownTruthMetrics",
     "LearnerSeeds",
     "ModelMultiplicityResult",
+    "NearOptimalSelection",
     "OutcomeScaling",
     "OuterFold",
     "PolicyValueContrast",
@@ -118,6 +144,10 @@ __all__ = [
     "SimulationData",
     "SimulationScenario",
     "SmokeRunSpec",
+    "StratifiedBootstrapSample",
+    "TimingFingerprint",
+    "TimingRunReport",
+    "TimingRunSpec",
     "TreatmentEffectPredictions",
     "aipw_policy_contributions",
     "aipw_treatment_values",
@@ -134,7 +164,9 @@ __all__ = [
     "evaluate_known_truth_method",
     "evaluate_random_deferral_known_truth",
     "execute_diagnostic_run",
+    "execute_timing_run",
     "fit_outer_fold_policy_nuisance",
+    "fit_predict_effect_learner",
     "fit_predict_prespecified_learners",
     "fit_preprocessor",
     "generate_simulation",
@@ -145,16 +177,24 @@ __all__ = [
     "model_multiplicity_check",
     "observed_covariate_mask",
     "original_scale_materiality_margin",
+    "package_versions",
     "plan_smoke_runs",
+    "plan_stage_b_runs",
+    "policy_vote_disagreement",
+    "process_peak_rss_mb",
     "random_deferral_at_matched_coverage",
     "record_adequacy_check",
     "reference_support_check",
     "repository_state",
     "run_cross_fitted_construction",
+    "run_cross_fitted_policy_disagreement",
     "scale_training_utility",
+    "select_near_optimal_candidates",
     "select_population_default",
     "select_smoke_run",
+    "select_stage_b_run",
     "simulation_data_sha256",
+    "treatment_stratified_bootstrap",
     "uncertainty_only_at_matched_coverage",
     "write_json_atomic",
 ]

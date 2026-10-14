@@ -368,16 +368,16 @@ def execute_diagnostic_run(
         fingerprint=fingerprint,
         resource_usage=ResourceUsage(
             wall_clock_seconds=elapsed,
-            process_peak_rss_mb_at_completion=_process_peak_rss_mb(),
+            process_peak_rss_mb_at_completion=process_peak_rss_mb(),
             cpu_count=os.cpu_count(),
             operating_system=f"{platform.system()} {platform.release()}",
             machine=platform.machine(),
             python_version=platform.python_version(),
-            package_versions=_package_versions(),
+            package_versions=package_versions(),
         ),
         invariants=invariants,
     )
-    _assert_disclosure_safe_report(report.to_dict())
+    assert_disclosure_safe_report(report.to_dict())
     return report
 
 
@@ -606,7 +606,9 @@ def _selection_matches_by_fold(
     return True
 
 
-def _assert_disclosure_safe_report(payload: dict[str, Any]) -> None:
+def assert_disclosure_safe_report(payload: dict[str, Any]) -> None:
+    """Reject diagnostic payloads containing scientific result fields."""
+
     forbidden_keys = {
         "metrics",
         "policy_values",
@@ -652,7 +654,9 @@ def _git_output(
     return completed.stdout.strip() if strip else completed.stdout
 
 
-def _package_versions() -> dict[str, str]:
+def package_versions() -> dict[str, str]:
+    """Return the reproducibility package-version fingerprint."""
+
     versions = {}
     for distribution in PACKAGE_DISTRIBUTIONS:
         try:
@@ -665,7 +669,9 @@ def _package_versions() -> dict[str, str]:
     return versions
 
 
-def _process_peak_rss_mb() -> float | None:
+def process_peak_rss_mb() -> float | None:
+    """Return the current process peak resident memory on Linux."""
+
     if sys.platform.startswith("linux"):
         status_path = Path("/proc/self/status")
         try:

@@ -90,6 +90,34 @@ def validate_project_config(config: ProjectConfig) -> None:
         is not True
     ):
         raise ConfigurationError("Uncertainty-only comparison must match coverage")
+    policy_disagreement = _require(
+        analysis,
+        "comparators",
+        "near_optimal_policy_disagreement",
+    )
+    expected_policy_disagreement = {
+        "matched_coverage": True,
+        "exact_replication_claimed": False,
+        "bootstrap_candidates_per_learner": 20,
+        "candidate_learners": [
+            "causal_forest_dml",
+            "penalised_interaction",
+            "boosted_dr_learner",
+        ],
+        "candidate_value_estimator": "inner_cross_fitted_aipw",
+        "near_optimal_rule": "within_one_standard_error_of_best_training_value",
+        "minimum_near_optimal_policies": 5,
+        "fallback_if_fewer": "include_next_best_until_five_and_flag",
+        "disagreement_score": (
+            "1-max(vote_fraction_treatment_0,vote_fraction_treatment_1)"
+        ),
+        "accept": "lowest_scores_to_exact_gate_count_within_outer_fold",
+    }
+    for key, expected in expected_policy_disagreement.items():
+        if _require(policy_disagreement, key) != expected:
+            raise ConfigurationError(
+                f"Policy-disagreement comparator choice has changed: {key}"
+            )
     random_deferral = _require(analysis, "comparators", "random_deferral")
     if _require(random_deferral, "matched_coverage") is not True:
         raise ConfigurationError("Random deferral must match gate coverage")
@@ -255,6 +283,33 @@ def validate_project_config(config: ProjectConfig) -> None:
         if _require(smoke, key) != expected:
             raise ConfigurationError(f"Stage A smoke-test choice has changed: {key}")
 
+    timing = _require(poc, "full_comparator_timing")
+    expected_timing_choices = {
+        "scenarios": ["combined"],
+        "sample_sizes": [500, 2000],
+        "replicate_ids": [900001],
+        "include_near_optimal_policy_disagreement": True,
+        "include_full_pipeline_bootstrap": False,
+    }
+    for key, expected in expected_timing_choices.items():
+        if _require(timing, key) != expected:
+            raise ConfigurationError(f"Stage B timing choice has changed: {key}")
+
+    bootstrap_timing = _require(poc, "bootstrap_timing")
+    expected_bootstrap_choices = {
+        "scenario": "combined",
+        "sample_size": 2000,
+        "replicate_id": 900002,
+        "bootstrap_repetitions": 5,
+        "repeat_complete_pipeline": True,
+        "extrapolation_only": True,
+    }
+    for key, expected in expected_bootstrap_choices.items():
+        if _require(bootstrap_timing, key) != expected:
+            raise ConfigurationError(
+                f"Stage B bootstrap-timing choice has changed: {key}"
+            )
+
     reporting = _require(poc, "reporting")
     expected_reporting_choices = {
         "output_root": "results/poc/stage-a",
@@ -276,6 +331,23 @@ def validate_project_config(config: ProjectConfig) -> None:
     saved_fields = _require(reporting, "save_only")
     if not isinstance(saved_fields, list) or set(saved_fields) != expected_saved_fields:
         raise ConfigurationError("POC reporting save_only fields have changed")
+
+    stage_b_reporting = _require(poc, "stage_b_reporting")
+    expected_stage_b_reporting = {
+        "output_root": "results/poc/stage-b",
+        "require_clean_git": True,
+        "process_isolation_per_run": True,
+        "scientific_results_exposed": False,
+    }
+    for key, expected in expected_stage_b_reporting.items():
+        if _require(stage_b_reporting, key) != expected:
+            raise ConfigurationError(f"Stage B reporting choice has changed: {key}")
+    stage_b_saved_fields = _require(stage_b_reporting, "save_only")
+    if (
+        not isinstance(stage_b_saved_fields, list)
+        or set(stage_b_saved_fields) != expected_saved_fields
+    ):
+        raise ConfigurationError("Stage B reporting save_only fields have changed")
 
     for prevalence in _all_declared_prevalences(simulation):
         if not 0.0 <= prevalence <= 1.0:

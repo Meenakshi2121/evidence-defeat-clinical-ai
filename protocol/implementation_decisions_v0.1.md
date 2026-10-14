@@ -217,3 +217,42 @@ Because this edit changes the analysis-configuration hash and code commit, the
 Stage A diagnostic will be repeated before later feasibility stages. The
 earlier Stage A reports contained only invariant statuses and resource usage;
 they were ineligible for paper effect estimates.
+
+## 12. Completed Stage A diagnostic record
+
+The corrected Stage A diagnostic was run on 14 October 2026 at Git commit
+`feb2a99ea9f37297e2a7fddcd3b6b54fcdb95b89`. All 12 planned runs completed and
+all 12 required invariants passed in every run. The run covered the clean
+control, four single-defect scenarios and the combined-defect scenario at
+`n=500`, with replicate identifiers 0 and 1. No scientific estimate, method
+ranking or policy-performance comparison was exposed. Stage A therefore
+establishes software operability only; it is not evidence for the primary
+hypothesis.
+
+## 13. Exact implementation of the policy-disagreement comparator
+
+Before Stage B timing and before viewing any method comparison, the following
+details were fixed on 14 October 2026:
+
+1. each candidate bootstrap resamples separately within treatment arms;
+2. candidate actions used for training-fold value estimation are themselves
+   cross-fitted on the same deterministic inner folds used for nuisance
+   prediction;
+3. each candidate is valued using its row-level inner cross-fitted augmented
+   inverse-probability-weighted contributions;
+4. “within one standard error of the best” means a candidate value is at least
+   the best candidate's estimated value minus the best candidate's own
+   standard error;
+5. if this retains fewer than five candidates, candidates are added in
+   descending training-value order, with fixed candidate order breaking exact
+   ties;
+6. retained candidates are refitted on treatment-stratified bootstrap samples
+   of the complete outer training fold before voting on outer-heldout rows;
+7. the disagreement score is one minus the larger binary action-vote share;
+   and
+8. the lowest-disagreement rows are accepted to exactly match the complete
+   gate's count separately within each outer fold.
+
+The outer-heldout outcome is not supplied to candidate fitting, retention or
+coverage matching. It enters only the later policy-evaluation score after all
+actions have been fixed.

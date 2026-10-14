@@ -36,6 +36,8 @@ class FoldPolicyNuisance:
     propensity_treatment_1: float
     propensity_source: str
     propensity_was_clipped: bool
+    training_mu0: NDArray[np.float64]
+    training_mu1: NDArray[np.float64]
     heldout_mu0: NDArray[np.float64]
     heldout_mu1: NDArray[np.float64]
     outcome_scaling: OutcomeScaling
@@ -279,6 +281,8 @@ def fit_outer_fold_policy_nuisance(
         propensity_treatment_1=probability_1,
         propensity_source=source,
         propensity_was_clipped=was_clipped,
+        training_mu0=inner_mu0,
+        training_mu1=inner_mu1,
         heldout_mu0=heldout_mu0,
         heldout_mu1=heldout_mu1,
         outcome_scaling=scaling,
@@ -414,17 +418,12 @@ def _inner_cross_fitted_outcome_predictions(
     outer_fold_id: int,
     analysis_config: dict[str, Any],
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    inner_seed = derive_model_seed(
-        int(analysis_config["master_seed"]),
-        run_id,
-        outer_fold_id,
-        "aipw_inner_folds",
-    )
-    fold_ids = make_outer_fold_ids(
+    fold_ids = make_inner_fold_ids(
         treatment,
         row_ids,
-        n_splits=int(analysis_config["cross_fitting"]["inner_folds"]),
-        seed=inner_seed,
+        run_id=run_id,
+        outer_fold_id=outer_fold_id,
+        analysis_config=analysis_config,
     )
     mu0 = np.full(len(covariates), np.nan)
     mu1 = np.full(len(covariates), np.nan)
@@ -450,6 +449,38 @@ def _inner_cross_fitted_outcome_predictions(
     _require_complete("inner mu0", mu0)
     _require_complete("inner mu1", mu1)
     return mu0, mu1
+
+
+def make_inner_fold_ids(
+    treatment: ArrayLike,
+    row_ids: ArrayLike,
+    *,
+    run_id: str,
+    outer_fold_id: int,
+    analysis_config: dict[str, Any],
+) -> NDArray[np.int16]:
+    """Create the shared deterministic inner folds for policy evaluation."""
+
+    if not run_id:
+        raise ValueError("run_id must not be empty")
+    if (
+        not isinstance(outer_fold_id, int)
+        or isinstance(outer_fold_id, bool)
+        or outer_fold_id < 0
+    ):
+        raise ValueError("outer_fold_id must be a non-negative integer")
+    inner_seed = derive_model_seed(
+        int(analysis_config["master_seed"]),
+        run_id,
+        outer_fold_id,
+        "aipw_inner_folds",
+    )
+    return make_outer_fold_ids(
+        treatment,
+        row_ids,
+        n_splits=int(analysis_config["cross_fitting"]["inner_folds"]),
+        seed=inner_seed,
+    )
 
 
 def _fit_arm_models_and_predict(

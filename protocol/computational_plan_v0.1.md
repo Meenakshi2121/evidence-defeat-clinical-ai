@@ -55,6 +55,18 @@ cost of the final bootstrap.
 These timing identifiers are outside the confirmatory replicate range and may
 never be included in scientific summaries.
 
+The Stage B plan and its first, smallest timing unit are invoked with:
+
+```text
+poetry run evidence-defeat-poc timing-plan
+poetry run evidence-defeat-poc timing-run --timing-id full_comparator_n500
+```
+
+The `n=2,000` comparator and each bootstrap timing repetition are authorised
+only after the preceding timing report has been inspected for runtime, memory
+and invariant failures. Running the units separately prevents a long or
+memory-intensive job from silently consuming the entire feasibility budget.
+
 ## 4. Stage C: blinded variance pilot
 
 After Stages A and B pass, run 25 reserved replicates for each of the ten

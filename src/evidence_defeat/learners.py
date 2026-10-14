@@ -106,9 +106,7 @@ class CausalForestEffectLearner:
         x = _prediction_matrix(covariates, self._feature_count)
         if not 0.0 < interval_alpha < 1.0:
             raise ValueError("interval_alpha must lie strictly between zero and one")
-        effect = _one_effect_per_row(
-            "causal-forest effect", self.model.effect(x), x.shape[0]
-        )
+        effect = self.predict_effect(x)
         lower_raw, upper_raw = self.model.effect_interval(x, alpha=interval_alpha)
         lower = _one_effect_per_row(
             "causal-forest lower interval", lower_raw, x.shape[0]
@@ -119,6 +117,16 @@ class CausalForestEffectLearner:
         if np.any(lower > upper):
             raise RuntimeError("causal-forest interval bounds are reversed")
         return effect, lower, upper
+
+    def predict_effect(self, covariates: ArrayLike) -> NDArray[np.float64]:
+        """Return point effects without computing an inference interval."""
+
+        x = _prediction_matrix(covariates, self._feature_count)
+        return _one_effect_per_row(
+            "causal-forest effect",
+            self.model.effect(x),
+            x.shape[0],
+        )
 
 
 class PenalisedInteractionEffectLearner:
@@ -317,6 +325,59 @@ def fit_predict_prespecified_learners(
     if not np.isfinite(result.effect_matrix).all():
         raise RuntimeError("at least one learner returned a non-finite effect")
     return result
+
+
+def fit_predict_effect_learner(
+    learner_id: str,
+    training_covariates: ArrayLike,
+    training_outcome: ArrayLike,
+    training_treatment: ArrayLike,
+    prediction_covariates: ArrayLike,
+    *,
+    analysis_config: dict[str, Any],
+    random_state: int,
+    outcome_type: OutcomeType,
+) -> NDArray[np.float64]:
+    """Fit one prespecified learner and return point effects only.
+
+    This is used by the policy-disagreement comparator, which needs many
+    candidate policies but does not use candidate-specific confidence
+    intervals.
+    """
+
+    x_train, y_train, a_train = _training_arrays(
+        training_covariates,
+        training_outcome,
+        training_treatment,
+    )
+    x_prediction = _prediction_matrix(prediction_covariates, x_train.shape[1])
+    if outcome_type == "binary" and not np.isin(y_train, (0.0, 1.0)).all():
+        raise ValueError("binary outcome must contain only zero and one")
+    if outcome_type not in {"binary", "continuous"}:
+        raise ValueError("outcome_type must be binary or continuous")
+
+    if learner_id == "causal_forest_dml":
+        learner = build_causal_forest(analysis_config, random_state).fit(
+            x_train,
+            y_train,
+            a_train,
+        )
+        return learner.predict_effect(x_prediction)
+    if learner_id == "penalised_interaction":
+        learner = build_interaction_learner(
+            analysis_config,
+            random_state,
+            outcome_type,
+        ).fit(x_train, y_train, a_train)
+        return learner.predict(x_prediction)
+    if learner_id == "boosted_dr_learner":
+        learner = build_doubly_robust(analysis_config, random_state).fit(
+            x_train,
+            y_train,
+            a_train,
+        )
+        return learner.predict(x_prediction)
+    raise ValueError(f"unknown learner_id: {learner_id}")
 
 
 def build_outcome_regression(

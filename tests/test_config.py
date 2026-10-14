@@ -22,6 +22,7 @@ def test_project_configuration_is_valid() -> None:
     assert config.simulation["confirmatory_primary_safety_grid"]["scenario_count"] == 10
     assert config.poc["scientific_status"]["confirmatory_evidence"] is False
     assert config.poc["reporting"]["scientific_results_exposed"] is False
+    assert config.poc["stage_b_reporting"]["scientific_results_exposed"] is False
 
 
 def test_mismatched_master_seed_is_rejected() -> None:
@@ -145,12 +146,36 @@ def test_unmatched_random_deferral_is_rejected() -> None:
         )
 
 
+def test_changed_policy_disagreement_candidate_count_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["comparators"]["near_optimal_policy_disagreement"][
+        "bootstrap_candidates_per_learner"
+    ] = 10
+
+    with pytest.raises(ConfigurationError, match="comparator choice"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )
+
+
 def test_exposing_scientific_results_during_poc_is_rejected() -> None:
     original = load_project_config(PROJECT_ROOT)
     poc = deepcopy(original.poc)
     poc["reporting"]["scientific_results_exposed"] = True
 
     with pytest.raises(ConfigurationError, match="POC reporting choice"):
+        validate_project_config(
+            ProjectConfig(original.analysis, original.simulation, poc)
+        )
+
+
+def test_exposing_scientific_results_during_stage_b_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    poc = deepcopy(original.poc)
+    poc["stage_b_reporting"]["scientific_results_exposed"] = True
+
+    with pytest.raises(ConfigurationError, match="Stage B reporting choice"):
         validate_project_config(
             ProjectConfig(original.analysis, original.simulation, poc)
         )

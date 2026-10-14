@@ -103,3 +103,14 @@ replicate in an isolated process and writes ignored diagnostic reports under
 memory and reproducibility fingerprints only. They intentionally conceal
 policy performance and method rankings.
 
+Stage B is deliberately run one timing unit at a time:
+
+```bash
+poetry run evidence-defeat-poc timing-plan
+poetry run evidence-defeat-poc timing-run --timing-id full_comparator_n500
+```
+
+The first timing unit is reviewed before authorising the `n=2,000` comparator
+and five bootstrap timing units. Stage B reports contain resource usage,
+invariant statuses and reproducibility fingerprints only.
+

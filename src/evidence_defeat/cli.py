@@ -19,6 +19,11 @@ from evidence_defeat.diagnostics import (
     select_smoke_run,
     write_json_atomic,
 )
+from evidence_defeat.feasibility import (
+    execute_timing_run,
+    plan_stage_b_runs,
+    select_stage_b_run,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -44,6 +49,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="new output directory; defaults under results/poc/stage-a",
     )
 
+    timing_plan = subparsers.add_parser(
+        "timing-plan",
+        help="validate and list the disclosure-safe Stage B timing units",
+    )
+    timing_plan.add_argument("--root", default=".", help="repository root")
+
+    timing_run = subparsers.add_parser(
+        "timing-run",
+        help="run one isolated Stage B timing unit",
+    )
+    timing_run.add_argument("--root", default=".", help="repository root")
+    timing_run.add_argument("--timing-id", required=True)
+    timing_run.add_argument(
+        "--output",
+        default=None,
+        help="new output directory; defaults under results/poc/stage-b",
+    )
+
     single = subparsers.add_parser(
         "_run-one",
         help="internal isolated-run worker",
@@ -53,6 +76,15 @@ def build_parser() -> argparse.ArgumentParser:
     single.add_argument("--scenario", required=True)
     single.add_argument("--replicate", required=True, type=int)
     single.add_argument("--expected-commit", required=True)
+
+    timing_worker = subparsers.add_parser(
+        "_timing-worker",
+        help="internal isolated Stage B timing worker",
+    )
+    timing_worker.add_argument("--root", required=True)
+    timing_worker.add_argument("--output", required=True)
+    timing_worker.add_argument("--timing-id", required=True)
+    timing_worker.add_argument("--expected-commit", required=True)
     return parser
 
 
@@ -68,12 +100,27 @@ def main(argv: Sequence[str] | None = None) -> int:
                 Path(arguments.root),
                 None if arguments.output is None else Path(arguments.output),
             )
+        if arguments.command == "timing-plan":
+            return _timing_plan(Path(arguments.root))
+        if arguments.command == "timing-run":
+            return _timing_run(
+                Path(arguments.root),
+                arguments.timing_id,
+                None if arguments.output is None else Path(arguments.output),
+            )
         if arguments.command == "_run-one":
             return _run_one(
                 Path(arguments.root),
                 Path(arguments.output),
                 arguments.scenario,
                 arguments.replicate,
+                arguments.expected_commit,
+            )
+        if arguments.command == "_timing-worker":
+            return _timing_worker(
+                Path(arguments.root),
+                Path(arguments.output),
+                arguments.timing_id,
                 arguments.expected_commit,
             )
     except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
@@ -227,6 +274,135 @@ def _run_one(
             "scenario": scenario_name,
             "replicate_id": replicate_id,
             "run_id": spec.run_id,
+            "code_commit": state.commit,
+            "git_branch": state.branch,
+            "error_type": type(error).__name__,
+            "error_message": str(error)[:500],
+        }
+        write_json_atomic(output, failure)
+        raise
+    write_json_atomic(output, report.to_dict())
+    print("PASS" if report.passed else "FAIL", flush=True)
+    return 0 if report.passed else 2
+
+
+def _timing_plan(root: Path) -> int:
+    project = load_project_config(root)
+    state = repository_state(root)
+    specs = plan_stage_b_runs(project)
+    payload = {
+        "stage": "computational_feasibility",
+        "scientific_status": "diagnostic_only_prelock",
+        "eligible_for_paper_effect_estimates": False,
+        "repository_clean": state.clean,
+        "code_commit": state.commit,
+        "git_branch": state.branch,
+        "configuration_sha256": configuration_hashes(project),
+        "run_count": len(specs),
+        "runs": [
+            {
+                "timing_id": spec.timing_id,
+                "component": spec.component,
+                "scenario": spec.scenario.defect,
+                "scenario_id": spec.scenario.scenario_id,
+                "sample_size": spec.scenario.sample_size,
+                "replicate_id": spec.scenario.replicate_id,
+                "bootstrap_repetition": spec.bootstrap_repetition,
+            }
+            for spec in specs
+        ],
+    }
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    return 0 if state.clean else 1
+
+
+def _timing_run(
+    root: Path,
+    timing_id: str,
+    requested_output: Path | None,
+) -> int:
+    root = root.resolve()
+    project = load_project_config(root)
+    state = repository_state(root)
+    if not state.clean:
+        raise RuntimeError("commit or remove repository changes before timing")
+    spec = select_stage_b_run(project, timing_id)
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    output = (
+        requested_output
+        if requested_output is not None
+        else root
+        / "results"
+        / "poc"
+        / "stage-b"
+        / f"{state.commit[:12]}-{timestamp}-{spec.timing_id}"
+    ).resolve()
+    configured_root = (root / project.poc["stage_b_reporting"]["output_root"]).resolve()
+    if output.is_relative_to(root) and not output.is_relative_to(configured_root):
+        raise RuntimeError(
+            f"an output inside the repository must remain under {configured_root}"
+        )
+    if output.exists() and any(output.iterdir()):
+        raise RuntimeError(f"output directory is not empty: {output}")
+    output.mkdir(parents=True, exist_ok=True)
+    report_path = output / "report.json"
+    print(f"Timing output: {output}", flush=True)
+    print(f"Running {spec.timing_id}; this may take substantially longer than Stage A")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "evidence_defeat.cli",
+            "_timing-worker",
+            "--root",
+            str(root),
+            "--output",
+            str(report_path),
+            "--timing-id",
+            spec.timing_id,
+            "--expected-commit",
+            state.commit,
+        ],
+        cwd=root,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(f"Stage B timing failed for {spec.timing_id}")
+    print(f"Stage B timing passed. Report: {report_path}")
+    return 0
+
+
+def _timing_worker(
+    root: Path,
+    output: Path,
+    timing_id: str,
+    expected_commit: str,
+) -> int:
+    root = root.resolve()
+    project = load_project_config(root)
+    state = repository_state(root)
+    if state.commit != expected_commit:
+        raise RuntimeError("code commit changed after the timing run began")
+    if not state.clean:
+        raise RuntimeError("repository became dirty during the timing run")
+    spec = select_stage_b_run(project, timing_id)
+    try:
+        report = execute_timing_run(
+            project,
+            spec,
+            code_commit=state.commit,
+            git_branch=state.branch,
+            repository_clean_at_start=state.clean,
+        )
+    except Exception as error:
+        failure = {
+            "schema_version": "0.1",
+            "stage": "computational_feasibility",
+            "scientific_status": "diagnostic_only_prelock",
+            "eligible_for_paper_effect_estimates": False,
+            "completed_at_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "status": "software_failure",
+            "timing_id": timing_id,
             "code_commit": state.commit,
             "git_branch": state.branch,
             "error_type": type(error).__name__,

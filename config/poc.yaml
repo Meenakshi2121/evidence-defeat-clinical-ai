@@ -53,6 +53,19 @@ bootstrap_timing:
   repeat_complete_pipeline: true
   extrapolation_only: true
 
+stage_b_reporting:
+  output_root: "results/poc/stage-b"
+  require_clean_git: true
+  process_isolation_per_run: true
+  scientific_results_exposed: false
+  save_only:
+    - run_status_and_timestamps
+    - invariant_statuses
+    - run_fingerprint
+    - wall_clock_seconds
+    - process_peak_rss_mb
+    - computing_environment
+
 variance_pilot:
   enabled_after_smoke_tests_pass: true
   replicate_ids: "100000 through 100024 inclusive"
