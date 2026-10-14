@@ -15,6 +15,7 @@ outcome:
   binary_margin_sensitivities: [0.01, 0.05]
   continuous_materiality_margin_sd: 0.10
   continuous_margin_sensitivities_sd: [0.05, 0.20]
+  continuous_scaling_sd_ddof: 1
 
 cross_fitting:
   outer_folds: 5

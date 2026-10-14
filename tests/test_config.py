@@ -87,3 +87,14 @@ def test_changed_model_seed_rule_is_rejected() -> None:
         validate_project_config(
             ProjectConfig(analysis, original.simulation, original.poc)
         )
+
+
+def test_population_sd_scaling_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["outcome"]["continuous_scaling_sd_ddof"] = 0
+
+    with pytest.raises(ConfigurationError, match="ddof=1"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )

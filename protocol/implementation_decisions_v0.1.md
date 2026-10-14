@@ -119,6 +119,11 @@ eight bytes of the SHA-256 digest of compact canonical JSON containing
 are strings, and the fold identifier is an integer. This gives separate but
 reproducible streams to the three estimators.
 
+For continuous outcomes, the mean and sample standard deviation (`ddof=1`)
+are calculated using the outer training fold only. Training outcomes are
+centred and scaled before learner fitting, so held-out conditional effects and
+the materiality margin are on the same training-standard-deviation scale.
+
 ## 7. What remains open
 
 Before protocol lock, the project still requires:

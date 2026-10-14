@@ -101,6 +101,10 @@ def validate_project_config(config: ProjectConfig) -> None:
         != "derived_from_master_seed"
     ):
         raise ConfigurationError("The nuisance learner must use a derived seed")
+    if _require(analysis, "outcome", "continuous_scaling_sd_ddof") != 1:
+        raise ConfigurationError(
+            "Continuous outcomes must use the outer-training sample SD with ddof=1"
+        )
 
     forest = _require(analysis, "learners", "primary", "parameters")
     trees = _require(forest, "n_estimators")

@@ -18,6 +18,14 @@ from evidence_defeat.learners import (
     TreatmentEffectPredictions,
     fit_predict_prespecified_learners,
 )
+from evidence_defeat.pipeline import (
+    CrossFittedConstruction,
+    FoldConstruction,
+    OutcomeScaling,
+    construct_outer_fold,
+    run_cross_fitted_construction,
+    scale_training_utility,
+)
 from evidence_defeat.preprocessing import (
     CovariateSchema,
     FittedPreprocessor,
@@ -42,11 +50,14 @@ __version__ = "0.1.0"
 __all__ = [
     "ESTIMATOR_ORDER",
     "CovariateSchema",
+    "CrossFittedConstruction",
     "DecisionCertaintyResult",
     "FittedPreprocessor",
+    "FoldConstruction",
     "GateSelections",
     "LearnerSeeds",
     "ModelMultiplicityResult",
+    "OutcomeScaling",
     "OuterFold",
     "ProjectConfig",
     "RecordAdequacyResult",
@@ -56,6 +67,7 @@ __all__ = [
     "TreatmentEffectPredictions",
     "apply_deferral_policy",
     "construct_gate",
+    "construct_outer_fold",
     "decision_certainty_check",
     "fit_predict_prespecified_learners",
     "fit_preprocessor",
@@ -68,5 +80,7 @@ __all__ = [
     "observed_covariate_mask",
     "record_adequacy_check",
     "reference_support_check",
+    "run_cross_fitted_construction",
+    "scale_training_utility",
     "uncertainty_only_at_matched_coverage",
 ]
