@@ -1,7 +1,7 @@
 # Implementation decisions v0.1
 
-**Status:** Draft for review before protocol lock
-**Date:** 13 October 2026
+**Status:** Draft for review before protocol lock  
+**Date:** 13 October 2026  
 **Configuration:** `config/analysis.yaml`
 
 ## 1. Why these three treatment-effect learners
@@ -57,6 +57,12 @@ accepts exactly as many participants as the complete gate. It therefore cannot
 win or lose merely by personalising more or fewer participants.
 
 No held-out outcome is used to set the matched-coverage threshold.
+
+Score ties are ordered by the ascending hexadecimal SHA-256 digest of the
+canonical JSON array `[trial_id, row_id, master_seed]`. Identifiers are
+converted to strings and JSON is encoded as UTF-8 without optional
+whitespace. This rule was fixed before any diagnostic or confirmatory method
+comparison was run.
 
 ## 4. Near-optimal-policy disagreement comparator
 

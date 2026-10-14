@@ -190,7 +190,7 @@ comparators:
     seeds: "derived_from_master_seed"
   single_check_selectors: true
   leave_one_check_out_ablations: true
-  tie_breaking: "sha256(trial_id,row_id,master_seed)"
+  tie_breaking: "ascending_sha256_hex(canonical_json([trial_id,row_id,master_seed]))"
   deferred_action: "same_population_default_as_complete_gate"
 
 known_truth_evaluation:

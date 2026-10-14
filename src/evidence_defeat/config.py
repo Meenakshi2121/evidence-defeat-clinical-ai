@@ -68,6 +68,11 @@ def validate_project_config(config: ProjectConfig) -> None:
         is not True
     ):
         raise ConfigurationError("Uncertainty-only comparison must match coverage")
+    expected_tie_rule = (
+        "ascending_sha256_hex(canonical_json([trial_id,row_id,master_seed]))"
+    )
+    if _require(analysis, "comparators", "tie_breaking") != expected_tie_rule:
+        raise ConfigurationError("The deterministic tie-breaking rule has changed")
 
     forest = _require(analysis, "learners", "primary", "parameters")
     trees = _require(forest, "n_estimators")

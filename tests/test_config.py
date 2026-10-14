@@ -54,3 +54,14 @@ def test_unmatched_uncertainty_comparator_is_rejected() -> None:
         validate_project_config(
             ProjectConfig(analysis, original.simulation, original.poc)
         )
+
+
+def test_changed_tie_breaking_rule_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["comparators"]["tie_breaking"] = "row_order"
+
+    with pytest.raises(ConfigurationError, match="tie-breaking rule"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )
