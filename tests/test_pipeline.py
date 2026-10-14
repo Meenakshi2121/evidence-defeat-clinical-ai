@@ -21,7 +21,6 @@ pytestmark = [
     pytest.mark.filterwarnings(
         "ignore:Could not generate out-of-bag predictions.*:UserWarning"
     ),
-    pytest.mark.filterwarnings("ignore:'penalty' was deprecated.*:FutureWarning"),
 ]
 
 

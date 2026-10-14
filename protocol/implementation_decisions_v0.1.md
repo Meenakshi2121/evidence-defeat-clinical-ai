@@ -201,3 +201,19 @@ rates, contrasts and method rankings. They retain only pass/fail invariant
 statuses, elapsed time, peak process memory and environment fingerprints. This
 allows feasibility and implementation failures to be examined without using
 diagnostic scientific results to tune the gate.
+
+## 11. Scikit-learn compatibility amendment after Stage A
+
+On 14 October 2026, after the disclosure-safe Stage A run and before any
+scientific result was examined, the binary interaction model specification was
+updated from `penalty: "l2"` to `l1_ratio: 0.0`. Scikit-learn 1.8 deprecates the
+former parameter spelling and identifies the latter as its direct L2
+replacement. The regularisation strength (`C: 1.0`), solver, model class and
+all other statistical choices remain unchanged. Warning suppressions used by
+the software tests were removed, and a test now asserts the replacement
+parameter explicitly.
+
+Because this edit changes the analysis-configuration hash and code commit, the
+Stage A diagnostic will be repeated before later feasibility stages. The
+earlier Stage A reports contained only invariant statuses and resource usage;
+they were ineligible for paper effect estimates.

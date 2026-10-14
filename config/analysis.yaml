@@ -95,7 +95,7 @@ learners:
     binary_outcome:
       class: "sklearn.linear_model.LogisticRegression"
       parameters:
-        penalty: "l2"
+        l1_ratio: 0.0
         C: 1.0
         solver: "lbfgs"
         max_iter: 5000

@@ -22,7 +22,6 @@ pytestmark = [
     pytest.mark.filterwarnings(
         "ignore:Could not generate out-of-bag predictions.*:UserWarning"
     ),
-    pytest.mark.filterwarnings("ignore:'penalty' was deprecated.*:FutureWarning"),
 ]
 
 
@@ -84,6 +83,7 @@ def test_factories_read_locked_estimator_classes_and_parameters() -> None:
     assert forest.model.n_estimators == 1000
     assert forest.model.subforest_size == 4
     assert interaction.model.C == 1.0
+    assert interaction.model.l1_ratio == 0.0
     assert doubly_robust.model.min_propensity == 0.05
 
 
