@@ -1,10 +1,10 @@
 # Protocol v0.1: Evidence defeat for safe and fair clinical AI deferral
 
 **Status:** Draft for supervisor and statistical review; not yet registered or
-locked  
-**Version date:** 13 October 2026  
-**Repository:** `Meenakshi2121/evidence-defeat-clinical-ai`  
-**Planned protocol tag:** `protocol-v1.0`  
+locked
+**Version date:** 14 October 2026
+**Repository:** `Meenakshi2121/evidence-defeat-clinical-ai`
+**Planned protocol tag:** `protocol-v1.0`
 
 ## 1. Study title
 
@@ -444,8 +444,10 @@ The confirmatory grid will include:
 
 Defects will be generated independently of outcomes where appropriate, then in
 prespecified outcome-related and group-related variants. The exact equations,
-coefficients and random seeds will be stored in
-`config/simulation_scenarios.yaml` before protocol lock.
+coefficients, scenario grid and seed derivation are recorded in
+`config/simulation_scenarios.yaml` and explained in
+`protocol/simulation_design_v0.1.md`. These files remain drafts until protocol
+review and lock.
 
 The final analysis will use at least 1,000 Monte Carlo replicates per primary
 scenario. Monte Carlo standard errors will accompany all simulation summaries.
@@ -533,11 +535,15 @@ study is a clinical prediction-model validation.
 
 ## 21. Decisions still required before lock
 
-Version 0.1 deliberately leaves two matters open for review:
+Version 0.1 leaves one matter open for empirical feasibility review:
 
-1. complete simulation equations and scenario coefficients; and
-2. confirmation that the planned computational budget supports the bootstrap
-   and Monte Carlo replicate counts.
+1. confirmation that the planned computational budget supports the bootstrap
+   and Monte Carlo replicate counts under the diagnostic procedure in
+   `protocol/computational_plan_v0.1.md` and `config/poc.yaml`.
+
+The simulation equations and coefficients are now explicit but remain subject
+to supervisor and statistical review before lock. They cannot be changed in
+response to comparative method performance.
 
 These decisions must be made before any confirmatory outcome analysis and may
 not be selected because they improve the framework's observed result.

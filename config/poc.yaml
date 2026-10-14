@@ -1,0 +1,83 @@
+schema_version: "0.1"
+status: "diagnostic_only_prelock"
+created: "2026-10-14"
+purpose: "Verify implementation and estimate runtime before protocol lock"
+
+scientific_status:
+  confirmatory_evidence: false
+  eligible_for_paper_effect_estimates: false
+  threshold_tuning_allowed: false
+  learner_selection_allowed: false
+  scenario_dropping_allowed: false
+
+software_smoke:
+  sample_size: 500
+  replicate_ids: [0, 1]
+  scenarios:
+    - clean_control
+    - record_adequacy
+    - reference_support
+    - model_multiplicity
+    - decision_uncertainty
+    - combined
+  use_locked_analysis_hyperparameters: true
+  include_comparators:
+    - population_default
+    - ungated_individualisation
+    - uncertainty_only
+    - random_deferral
+    - single_check_selectors
+    - leave_one_check_out_ablations
+  exclude_for_smoke:
+    - near_optimal_policy_disagreement
+    - full_pipeline_bootstrap
+
+full_comparator_timing:
+  scenarios: [combined]
+  sample_sizes: [500, 2000]
+  replicate_ids: [900001]
+  include_near_optimal_policy_disagreement: true
+  include_full_pipeline_bootstrap: false
+  record:
+    - wall_clock_seconds
+    - peak_memory_mb
+    - cpu_count
+    - package_versions
+    - operating_system
+
+bootstrap_timing:
+  scenario: "combined"
+  sample_size: 2000
+  replicate_id: 900002
+  bootstrap_repetitions: 5
+  repeat_complete_pipeline: true
+  extrapolation_only: true
+
+variance_pilot:
+  enabled_after_smoke_tests_pass: true
+  replicate_ids: "100000 through 100024 inclusive"
+  scenarios: "all ten confirmatory_primary_safety_grid scenarios"
+  use_for:
+    - "estimate variance of paired primary contrast"
+    - "estimate runtime distribution"
+  forbidden_use:
+    - "inspect or report mean method ranking"
+    - "change thresholds, coefficients, learners, or scenario membership"
+  replicate_count_rule: "max(1000, max_over_primary_scenarios(ceil((pilot_sd_scenario/0.0025)^2))), capped at 5000 pending review"
+
+required_pass_conditions:
+  - "same seed reproduces identical generated arrays and fold assignments"
+  - "different replicate identifiers produce different streams"
+  - "all binary conditional means lie in [0.01,0.99]"
+  - "treatment is generated independently with probability 0.5"
+  - "held-out outcomes are never read during gate construction"
+  - "matched-coverage comparators accept exactly the gate count in every outer fold"
+  - "all four gate checks are Boolean and complete gate equals their logical AND"
+  - "material unsafe acceptance uses the population denominator"
+  - "continuous effects and estimates are compared on the same training-SD scale"
+  - "every output contains scenario, replicate, seed, configuration hash, and code commit"
+
+stopping_rule:
+  stop_on_error: true
+  no_automatic_fallback_to_alternative_model: true
+  software_failure_action: "record failure, repair implementation, rerun all diagnostic replicates, and document before lock"

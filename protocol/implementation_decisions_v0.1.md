@@ -1,7 +1,7 @@
 # Implementation decisions v0.1
 
-**Status:** Draft for review before protocol lock  
-**Date:** 13 October 2026  
+**Status:** Draft for review before protocol lock
+**Date:** 13 October 2026
 **Configuration:** `config/analysis.yaml`
 
 ## 1. Why these three treatment-effect learners
@@ -102,13 +102,13 @@ from deciding whether the gate is declared fair.
 
 Before protocol lock, the project still requires:
 
-1. exact data-generating equations and coefficients for every simulation
-   scenario;
+1. supervisor and statistical review of the exact data-generating equations
+   and coefficients in `config/simulation_scenarios.yaml`;
 2. runtime tests to determine whether 1,000 Monte Carlo replicates, 200
    semi-synthetic replications and 500 full-pipeline bootstraps are feasible;
 3. unit tests confirming treatment-effect sign, probability-difference scale,
    interval extraction, fold isolation and exact coverage matching; and
-4. supervisor and statistical review.
+4. final supervisor and statistical sign-off.
 
 Runtime tests may change computational counts through a dated precision-based
 amendment. They may not be used to tune thresholds or choose methods by their
