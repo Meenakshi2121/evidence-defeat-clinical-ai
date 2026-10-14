@@ -73,6 +73,13 @@ def validate_project_config(config: ProjectConfig) -> None:
         != "ascending_string_row_id"
     ):
         raise ConfigurationError("The pre-split row-order rule has changed")
+    inner_folds = _require(analysis, "cross_fitting", "inner_folds")
+    if (
+        not isinstance(inner_folds, int)
+        or isinstance(inner_folds, bool)
+        or inner_folds < 2
+    ):
+        raise ConfigurationError("At least two inner folds are required")
 
     if _require(analysis, "gate", "combination") != "logical_and":
         raise ConfigurationError("The primary gate must use logical AND")
@@ -105,6 +112,49 @@ def validate_project_config(config: ProjectConfig) -> None:
         raise ConfigurationError(
             "Continuous outcomes must use the outer-training sample SD with ddof=1"
         )
+
+    evaluation = _require(analysis, "policy_evaluation")
+    expected_evaluation_choices = {
+        "outcome_regression_structure": "separate_models_by_treatment_arm",
+        "default_nuisance_predictions": (
+            "inner_cross_fitted_within_outer_training_fold"
+        ),
+        "heldout_nuisance_predictions": "fit_on_complete_outer_training_fold",
+        "propensity_source_order": (
+            "documented_randomisation_probability_else_outer_training_fraction"
+        ),
+        "conditional_standard_errors_are_final_inference": False,
+    }
+    for key, expected in expected_evaluation_choices.items():
+        if _require(evaluation, key) != expected:
+            raise ConfigurationError(f"Policy-evaluation choice has changed: {key}")
+
+    expected_default_choices = {
+        "estimator": "training_fold_aipw_population_mean_difference",
+        "treatment_1_rule": (
+            "estimated_mean_utility_difference_greater_than_materiality_margin"
+        ),
+        "otherwise": 0,
+        "held_out_outcomes_used": False,
+    }
+    default_policy = _require(analysis, "default_policy")
+    for key, expected in expected_default_choices.items():
+        if _require(default_policy, key) != expected:
+            raise ConfigurationError(f"Population-default choice has changed: {key}")
+    if _require(analysis, "real_outcome_evaluation", "estimator") != (
+        "cross_fitted_aipw"
+    ):
+        raise ConfigurationError(
+            "Real-outcome evaluation must remain cross-fitted AIPW"
+        )
+
+    propensity_clip = _require(analysis, "propensity", "clip")
+    if (
+        not isinstance(propensity_clip, list)
+        or len(propensity_clip) != 2
+        or not 0.0 < float(propensity_clip[0]) < float(propensity_clip[1]) < 1.0
+    ):
+        raise ConfigurationError("Propensity clipping bounds must lie inside (0, 1)")
 
     forest = _require(analysis, "learners", "primary", "parameters")
     trees = _require(forest, "n_estimators")

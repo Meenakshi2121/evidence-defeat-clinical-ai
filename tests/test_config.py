@@ -98,3 +98,36 @@ def test_population_sd_scaling_is_rejected() -> None:
         validate_project_config(
             ProjectConfig(analysis, original.simulation, original.poc)
         )
+
+
+def test_changed_policy_evaluation_structure_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["policy_evaluation"]["outcome_regression_structure"] = "pooled_model"
+
+    with pytest.raises(ConfigurationError, match="Policy-evaluation choice"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )
+
+
+def test_default_using_heldout_outcomes_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["default_policy"]["held_out_outcomes_used"] = True
+
+    with pytest.raises(ConfigurationError, match="Population-default choice"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )
+
+
+def test_invalid_propensity_clip_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["propensity"]["clip"] = [0.0, 1.0]
+
+    with pytest.raises(ConfigurationError, match="Propensity clipping"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )

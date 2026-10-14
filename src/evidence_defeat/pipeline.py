@@ -72,8 +72,11 @@ class CrossFittedConstruction:
 
     trial_id: str
     run_id: str
+    outcome_type: str
+    schema: CovariateSchema
     row_ids: NDArray[np.str_]
     fold_ids: NDArray[np.int16]
+    treatment: NDArray[np.int8]
     predictions: TreatmentEffectPredictions
     checks: Mapping[str, NDArray[np.bool_]]
     gate: GateSelections
@@ -336,8 +339,11 @@ def run_cross_fitted_construction(
     return CrossFittedConstruction(
         trial_id=trial_id,
         run_id=run_id,
+        outcome_type=outcome_type,
+        schema=schema,
         row_ids=identifiers,
         fold_ids=assigned_folds,
+        treatment=assigned_treatment.copy(),
         predictions=predictions,
         checks=check_arrays,
         gate=gate,

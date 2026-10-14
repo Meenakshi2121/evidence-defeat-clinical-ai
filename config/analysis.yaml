@@ -142,6 +142,13 @@ default_policy:
   otherwise: 0
   held_out_outcomes_used: false
 
+policy_evaluation:
+  outcome_regression_structure: "separate_models_by_treatment_arm"
+  default_nuisance_predictions: "inner_cross_fitted_within_outer_training_fold"
+  heldout_nuisance_predictions: "fit_on_complete_outer_training_fold"
+  propensity_source_order: "documented_randomisation_probability_else_outer_training_fraction"
+  conditional_standard_errors_are_final_inference: false
+
 gate:
   combination: "logical_and"
   weighted_compensation: false

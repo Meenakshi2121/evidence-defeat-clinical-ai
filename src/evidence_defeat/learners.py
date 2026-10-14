@@ -197,7 +197,7 @@ def build_causal_forest(
     _expect(primary, "class", "econml.dml.CausalForestDML")
     parameters = _seeded_parameters(primary["parameters"], random_state)
     model = CausalForestDML(
-        model_y=_build_outcome_regression(analysis_config, random_state),
+        model_y=build_outcome_regression(analysis_config, random_state),
         model_t=DummyClassifier(**primary["treatment_model"]["parameters"]),
         **parameters,
     )
@@ -247,7 +247,7 @@ def build_doubly_robust(
         model_propensity=DummyClassifier(
             **specification["propensity_model"]["parameters"]
         ),
-        model_regression=_build_outcome_regression(analysis_config, random_state),
+        model_regression=build_outcome_regression(analysis_config, random_state),
         model_final=RandomForestRegressor(
             **_seeded_parameters(final_specification["parameters"], random_state)
         ),
@@ -319,10 +319,12 @@ def fit_predict_prespecified_learners(
     return result
 
 
-def _build_outcome_regression(
+def build_outcome_regression(
     analysis_config: dict[str, Any],
     random_state: int,
 ) -> HistGradientBoostingRegressor:
+    """Build the shared prespecified nuisance outcome regressor."""
+
     specification = analysis_config["nuisance_outcome_model"]
     _expect(
         specification,

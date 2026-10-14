@@ -131,6 +131,9 @@ def test_cross_fitted_construction_is_complete_and_matches_fold_coverage(
     )
 
     assert result.predictions.effect_matrix.shape == (300, 3)
+    assert result.outcome_type == "binary"
+    assert result.schema == schema
+    np.testing.assert_array_equal(result.treatment, frame["treatment"])
     assert np.isfinite(result.predictions.effect_matrix).all()
     assert np.isfinite(result.predictions.primary_interval_lower).all()
     assert np.isfinite(result.predictions.primary_interval_upper).all()
