@@ -65,3 +65,14 @@ def test_changed_tie_breaking_rule_is_rejected() -> None:
         validate_project_config(
             ProjectConfig(analysis, original.simulation, original.poc)
         )
+
+
+def test_outcome_stratified_outer_folds_are_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["cross_fitting"]["outer_stratification"] = "treatment_and_outcome"
+
+    with pytest.raises(ConfigurationError, match="treatment only"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )

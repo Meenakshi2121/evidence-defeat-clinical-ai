@@ -104,7 +104,16 @@ This decision does not reject weighted fairness measures in general. It keeps
 the present paper's main claim falsifiable and prevents a choice of weights
 from deciding whether the gate is declared fair.
 
-## 6. What remains open
+## 6. Deterministic outer-fold assignment
+
+Outer folds use scikit-learn's `StratifiedKFold`, stratifying on randomised
+treatment only, with shuffling and the prespecified fold seed. Before
+splitting, rows are ordered by the ascending string representation of their
+unique row identifier and assignments are then mapped back to the supplied
+order. This makes fold membership invariant to incidental file row order.
+Outcomes and protected-group labels do not enter the split.
+
+## 7. What remains open
 
 Before protocol lock, the project still requires:
 

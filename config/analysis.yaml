@@ -19,6 +19,9 @@ outcome:
 cross_fitting:
   outer_folds: 5
   outer_stratification: "treatment_only"
+  outer_splitter: "sklearn.model_selection.StratifiedKFold"
+  outer_shuffle: true
+  row_order_before_split: "ascending_string_row_id"
   primary_seed: 20261013
   sensitivity_seeds: [1729, 271828, 314159, 161803]
   inner_folds: 3

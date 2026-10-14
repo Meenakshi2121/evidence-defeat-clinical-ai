@@ -59,6 +59,21 @@ def validate_project_config(config: ProjectConfig) -> None:
     if _require(simulation, "reproducibility", "master_seed") != master_seed:
         raise ConfigurationError("Analysis and simulation master seeds must match")
 
+    if _require(analysis, "cross_fitting", "outer_stratification") != "treatment_only":
+        raise ConfigurationError("Outer folds must be stratified by treatment only")
+    if (
+        _require(analysis, "cross_fitting", "outer_splitter")
+        != "sklearn.model_selection.StratifiedKFold"
+    ):
+        raise ConfigurationError("The outer-fold splitter has changed")
+    if _require(analysis, "cross_fitting", "outer_shuffle") is not True:
+        raise ConfigurationError("Outer-fold shuffling must remain enabled")
+    if (
+        _require(analysis, "cross_fitting", "row_order_before_split")
+        != "ascending_string_row_id"
+    ):
+        raise ConfigurationError("The pre-split row-order rule has changed")
+
     if _require(analysis, "gate", "combination") != "logical_and":
         raise ConfigurationError("The primary gate must use logical AND")
     if _require(analysis, "gate", "weighted_compensation") is not False:
