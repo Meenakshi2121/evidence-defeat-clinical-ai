@@ -88,6 +88,19 @@ def validate_project_config(config: ProjectConfig) -> None:
     )
     if _require(analysis, "comparators", "tie_breaking") != expected_tie_rule:
         raise ConfigurationError("The deterministic tie-breaking rule has changed")
+    expected_model_seed_rule = (
+        "int.from_bytes(first_8_bytes(sha256(canonical_json([master_seed,run_id,"
+        "fold_id,learner_id]))),big) modulo 2^32"
+    )
+    if _require(analysis, "reproducibility", "model_seed_rule") != (
+        expected_model_seed_rule
+    ):
+        raise ConfigurationError("The model-seed derivation rule has changed")
+    if (
+        _require(analysis, "nuisance_outcome_model", "parameters", "random_state")
+        != "derived_from_master_seed"
+    ):
+        raise ConfigurationError("The nuisance learner must use a derived seed")
 
     forest = _require(analysis, "learners", "primary", "parameters")
     trees = _require(forest, "n_estimators")

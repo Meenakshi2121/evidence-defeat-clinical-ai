@@ -51,6 +51,7 @@ nuisance_outcome_model: &nuisance_outcome_model
     min_samples_leaf: 20
     l2_regularization: 1.0
     early_stopping: false
+    random_state: "derived_from_master_seed"
 
 learners:
   primary:
@@ -235,6 +236,7 @@ fairness_audit:
 
 reproducibility:
   deterministic_hash_ties: true
+  model_seed_rule: "int.from_bytes(first_8_bytes(sha256(canonical_json([master_seed,run_id,fold_id,learner_id]))),big) modulo 2^32"
   save_fold_assignments: true
   save_run_fingerprint: true
   save_package_versions: true

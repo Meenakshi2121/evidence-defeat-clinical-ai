@@ -12,6 +12,12 @@ from evidence_defeat.checks import (
 )
 from evidence_defeat.config import ProjectConfig, load_project_config
 from evidence_defeat.folds import OuterFold, iter_outer_folds, make_outer_fold_ids
+from evidence_defeat.learners import (
+    ESTIMATOR_ORDER,
+    LearnerSeeds,
+    TreatmentEffectPredictions,
+    fit_predict_prespecified_learners,
+)
 from evidence_defeat.preprocessing import (
     CovariateSchema,
     FittedPreprocessor,
@@ -34,10 +40,12 @@ from evidence_defeat.simulation import (
 __version__ = "0.1.0"
 
 __all__ = [
+    "ESTIMATOR_ORDER",
     "CovariateSchema",
     "DecisionCertaintyResult",
     "FittedPreprocessor",
     "GateSelections",
+    "LearnerSeeds",
     "ModelMultiplicityResult",
     "OuterFold",
     "ProjectConfig",
@@ -45,9 +53,11 @@ __all__ = [
     "ReferenceSupportResult",
     "SimulationData",
     "SimulationScenario",
+    "TreatmentEffectPredictions",
     "apply_deferral_policy",
     "construct_gate",
     "decision_certainty_check",
+    "fit_predict_prespecified_learners",
     "fit_preprocessor",
     "generate_simulation",
     "iter_outer_folds",

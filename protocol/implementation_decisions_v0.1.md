@@ -113,6 +113,12 @@ unique row identifier and assignments are then mapped back to the supplied
 order. This makes fold membership invariant to incidental file row order.
 Outcomes and protected-group labels do not enter the split.
 
+Each learner's random state is the unsigned 32-bit reduction of the first
+eight bytes of the SHA-256 digest of compact canonical JSON containing
+`[master_seed, run_id, fold_id, learner_id]`. The run and learner identifiers
+are strings, and the fold identifier is an integer. This gives separate but
+reproducible streams to the three estimators.
+
 ## 7. What remains open
 
 Before protocol lock, the project still requires:

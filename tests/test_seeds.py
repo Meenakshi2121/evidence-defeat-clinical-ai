@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import hashlib
+import json
 
 import numpy as np
 
-from evidence_defeat.seeds import derive_replicate_seed, named_generators
+from evidence_defeat.seeds import (
+    derive_model_seed,
+    derive_replicate_seed,
+    named_generators,
+)
 
 
 def test_seed_matches_prespecified_sha256_rule() -> None:
@@ -51,3 +56,28 @@ def test_invalid_seed_inputs_are_rejected() -> None:
             pass
         else:  # pragma: no cover - explicit failure branch
             raise AssertionError(f"Expected ValueError for {args}")
+
+
+def test_model_seed_matches_locked_canonical_json_rule() -> None:
+    payload = json.dumps(
+        [20261013, "scenario-a-replicate-7", 3, "causal_forest_dml"],
+        separators=(",", ":"),
+    ).encode("utf-8")
+    expected = int.from_bytes(hashlib.sha256(payload).digest()[:8], "big") % (2**32)
+
+    assert (
+        derive_model_seed(
+            20261013,
+            "scenario-a-replicate-7",
+            3,
+            "causal_forest_dml",
+        )
+        == expected
+    )
+
+
+def test_model_seeds_are_distinct_by_fold_and_learner() -> None:
+    base = derive_model_seed(20261013, "run", 0, "causal_forest_dml")
+
+    assert base != derive_model_seed(20261013, "run", 1, "causal_forest_dml")
+    assert base != derive_model_seed(20261013, "run", 0, "boosted_dr_learner")

@@ -76,3 +76,14 @@ def test_outcome_stratified_outer_folds_are_rejected() -> None:
         validate_project_config(
             ProjectConfig(analysis, original.simulation, original.poc)
         )
+
+
+def test_changed_model_seed_rule_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["reproducibility"]["model_seed_rule"] = "global_rng"
+
+    with pytest.raises(ConfigurationError, match="model-seed derivation"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )
