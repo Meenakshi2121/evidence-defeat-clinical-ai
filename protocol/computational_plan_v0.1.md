@@ -29,6 +29,21 @@ Stage A passes only when the invariants in `config/poc.yaml` pass, including
 fold isolation, exact coverage matching, logical-AND gate construction,
 correct metric denominators and complete run fingerprints.
 
+Each replicate runs in a fresh process so its peak resident memory is
+interpretable. The runner requires a clean Git worktree and records the full
+commit, configuration hashes, generated-data hash, fold-assignment hash,
+package versions and computing environment. Its saved reports contain only
+invariant statuses and resource/fingerprint metadata; policy values, safety
+rates, contrasts and method rankings remain concealed during this stage.
+
+After committing the runner, the diagnostic plan and complete Stage A grid are
+invoked with:
+
+```text
+poetry run evidence-defeat-poc plan
+poetry run evidence-defeat-poc smoke
+```
+
 ## 3. Stage B: full-comparator timing
 
 Run one reserved replicate of the combined scenario at `n=500` and `n=2,000`

@@ -81,3 +81,16 @@ stopping_rule:
   stop_on_error: true
   no_automatic_fallback_to_alternative_model: true
   software_failure_action: "record failure, repair implementation, rerun all diagnostic replicates, and document before lock"
+
+reporting:
+  output_root: "results/poc/stage-a"
+  require_clean_git: true
+  process_isolation_per_run: true
+  scientific_results_exposed: false
+  save_only:
+    - run_status_and_timestamps
+    - invariant_statuses
+    - run_fingerprint
+    - wall_clock_seconds
+    - process_peak_rss_mb
+    - computing_environment

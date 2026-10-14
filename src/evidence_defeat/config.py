@@ -225,6 +225,58 @@ def validate_project_config(config: ProjectConfig) -> None:
                 f"poc.scientific_status.{prohibited_key} must be false"
             )
 
+    smoke = _require(poc, "software_smoke")
+    expected_smoke_choices = {
+        "sample_size": 500,
+        "replicate_ids": [0, 1],
+        "scenarios": [
+            "clean_control",
+            "record_adequacy",
+            "reference_support",
+            "model_multiplicity",
+            "decision_uncertainty",
+            "combined",
+        ],
+        "use_locked_analysis_hyperparameters": True,
+        "include_comparators": [
+            "population_default",
+            "ungated_individualisation",
+            "uncertainty_only",
+            "random_deferral",
+            "single_check_selectors",
+            "leave_one_check_out_ablations",
+        ],
+        "exclude_for_smoke": [
+            "near_optimal_policy_disagreement",
+            "full_pipeline_bootstrap",
+        ],
+    }
+    for key, expected in expected_smoke_choices.items():
+        if _require(smoke, key) != expected:
+            raise ConfigurationError(f"Stage A smoke-test choice has changed: {key}")
+
+    reporting = _require(poc, "reporting")
+    expected_reporting_choices = {
+        "output_root": "results/poc/stage-a",
+        "require_clean_git": True,
+        "process_isolation_per_run": True,
+        "scientific_results_exposed": False,
+    }
+    for key, expected in expected_reporting_choices.items():
+        if _require(reporting, key) != expected:
+            raise ConfigurationError(f"POC reporting choice has changed: {key}")
+    expected_saved_fields = {
+        "run_status_and_timestamps",
+        "invariant_statuses",
+        "run_fingerprint",
+        "wall_clock_seconds",
+        "process_peak_rss_mb",
+        "computing_environment",
+    }
+    saved_fields = _require(reporting, "save_only")
+    if not isinstance(saved_fields, list) or set(saved_fields) != expected_saved_fields:
+        raise ConfigurationError("POC reporting save_only fields have changed")
+
     for prevalence in _all_declared_prevalences(simulation):
         if not 0.0 <= prevalence <= 1.0:
             raise ConfigurationError(f"Defect prevalence outside [0,1]: {prevalence}")

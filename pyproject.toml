@@ -18,6 +18,12 @@ dependencies = [
   "PyYAML>=6,<7",
 ]
 
+[project.scripts]
+evidence-defeat-poc = "evidence_defeat.cli:main"
+
+[tool.poetry]
+packages = [{ include = "evidence_defeat", from = "src" }]
+
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3,<9",

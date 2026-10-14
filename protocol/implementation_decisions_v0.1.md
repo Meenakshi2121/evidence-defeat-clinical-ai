@@ -186,3 +186,18 @@ Before protocol lock, the project still requires:
 Runtime tests may change computational counts through a dated precision-based
 amendment. They may not be used to tune thresholds or choose methods by their
 observed ranking.
+
+## 10. Proof-of-concept execution and result concealment
+
+The Stage A runner expands only the scenarios and replicate identifiers in
+`config/poc.yaml`. It refuses to run from a dirty worktree and records the full
+Git commit plus SHA-256 hashes of all three configuration documents, generated
+simulation arrays and fold assignments. Every replicate runs in a separate
+process so the recorded peak resident memory is not inherited from an earlier
+model fit.
+
+Stage A reports deliberately omit coverage, policy values, unsafe-acceptance
+rates, contrasts and method rankings. They retain only pass/fail invariant
+statuses, elapsed time, peak process memory and environment fingerprints. This
+allows feasibility and implementation failures to be examined without using
+diagnostic scientific results to tune the gate.

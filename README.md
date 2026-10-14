@@ -86,3 +86,20 @@ No confirmatory analysis will be run until the protocol is tagged and
 registered. Every post-lock change must be dated and classified as
 confirmatory, sensitivity or exploratory.
 
+## Pre-lock proof of concept
+
+After the diagnostic runner has been committed and the worktree is clean:
+
+```bash
+poetry install
+poetry run evidence-defeat-poc plan
+poetry run evidence-defeat-poc smoke
+```
+
+The first command installs the repository's command-line entry point. `plan`
+validates and displays the frozen 12-run Stage A grid. `smoke` executes each
+replicate in an isolated process and writes ignored diagnostic reports under
+`results/poc/stage-a/`. These reports contain invariant statuses, runtime,
+memory and reproducibility fingerprints only. They intentionally conceal
+policy performance and method rankings.
+
