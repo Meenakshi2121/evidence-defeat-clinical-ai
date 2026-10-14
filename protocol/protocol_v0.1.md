@@ -322,9 +322,11 @@ identifier. Random deferral will be averaged across 100 prespecified seeds.
 
 Uncertainty-only deferral will rank participants by the primary learner's
 standardised distance beyond the indifference region. Policy-disagreement
-deferral will rank them by disagreement among the prespecified candidate
-policies. Its exact score must be reproduced from a named published method and
-fixed in `config/analysis.yaml` before protocol lock.
+deferral will use the prespecified coverage-matched adaptation of the
+near-optimal-policy principle of Sawarni et al. recorded in
+`protocol/implementation_decisions_v0.1.md`. It will rank participants by vote
+disagreement within a training-fold-defined near-optimal policy set. This is a
+comparator inspired by that method, not a claim of exact replication.
 
 ## 13. Known-truth estimands
 
@@ -531,12 +533,10 @@ study is a clinical prediction-model validation.
 
 ## 21. Decisions still required before lock
 
-Version 0.1 deliberately leaves four matters open for review:
+Version 0.1 deliberately leaves two matters open for review:
 
-1. exact causal-learner implementations and hyperparameters;
-2. the published policy-disagreement comparator and its score;
-3. complete simulation equations and scenario coefficients; and
-4. confirmation that the planned computational budget supports the bootstrap
+1. complete simulation equations and scenario coefficients; and
+2. confirmation that the planned computational budget supports the bootstrap
    and Monte Carlo replicate counts.
 
 These decisions must be made before any confirmatory outcome analysis and may
