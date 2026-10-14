@@ -23,6 +23,16 @@ from evidence_defeat.evaluation import (
     select_population_default,
 )
 from evidence_defeat.folds import OuterFold, iter_outer_folds, make_outer_fold_ids
+from evidence_defeat.known_truth import (
+    KnownTruthEvaluation,
+    KnownTruthMetrics,
+    RandomDeferralKnownTruthEvaluation,
+    deterministic_acceptances,
+    evaluate_cross_fitted_known_truth,
+    evaluate_known_truth_method,
+    evaluate_random_deferral_known_truth,
+    original_scale_materiality_margin,
+)
 from evidence_defeat.learners import (
     ESTIMATOR_ORDER,
     LearnerSeeds,
@@ -46,9 +56,11 @@ from evidence_defeat.preprocessing import (
 )
 from evidence_defeat.selection import (
     GateSelections,
+    RandomDeferralSelections,
     apply_deferral_policy,
     construct_gate,
     match_coverage_within_folds,
+    random_deferral_at_matched_coverage,
     uncertainty_only_at_matched_coverage,
 )
 from evidence_defeat.simulation import (
@@ -69,6 +81,8 @@ __all__ = [
     "FoldConstruction",
     "FoldPolicyNuisance",
     "GateSelections",
+    "KnownTruthEvaluation",
+    "KnownTruthMetrics",
     "LearnerSeeds",
     "ModelMultiplicityResult",
     "OutcomeScaling",
@@ -76,6 +90,8 @@ __all__ = [
     "PolicyValueContrast",
     "PolicyValueEstimate",
     "ProjectConfig",
+    "RandomDeferralKnownTruthEvaluation",
+    "RandomDeferralSelections",
     "RecordAdequacyResult",
     "ReferenceSupportResult",
     "SimulationData",
@@ -88,7 +104,11 @@ __all__ = [
     "construct_gate",
     "construct_outer_fold",
     "decision_certainty_check",
+    "deterministic_acceptances",
+    "evaluate_cross_fitted_known_truth",
     "evaluate_cross_fitted_policies",
+    "evaluate_known_truth_method",
+    "evaluate_random_deferral_known_truth",
     "fit_outer_fold_policy_nuisance",
     "fit_predict_prespecified_learners",
     "fit_preprocessor",
@@ -99,6 +119,8 @@ __all__ = [
     "match_coverage_within_folds",
     "model_multiplicity_check",
     "observed_covariate_mask",
+    "original_scale_materiality_margin",
+    "random_deferral_at_matched_coverage",
     "record_adequacy_check",
     "reference_support_check",
     "run_cross_fitted_construction",

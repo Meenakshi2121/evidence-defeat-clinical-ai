@@ -90,6 +90,33 @@ def validate_project_config(config: ProjectConfig) -> None:
         is not True
     ):
         raise ConfigurationError("Uncertainty-only comparison must match coverage")
+    random_deferral = _require(analysis, "comparators", "random_deferral")
+    if _require(random_deferral, "matched_coverage") is not True:
+        raise ConfigurationError("Random deferral must match gate coverage")
+    repetitions = _require(random_deferral, "repetitions")
+    if (
+        not isinstance(repetitions, int)
+        or isinstance(repetitions, bool)
+        or repetitions < 1
+    ):
+        raise ConfigurationError("Random-deferral repetitions must be positive")
+    if _require(random_deferral, "seeds") != "derived_from_master_seed":
+        raise ConfigurationError("Random-deferral seeds must be derived reproducibly")
+    known_truth = _require(analysis, "known_truth_evaluation")
+    if _require(known_truth, "primary_metric") != (
+        "material_unsafe_acceptance_population_denominator"
+    ):
+        raise ConfigurationError(
+            "Unsafe acceptance must use the population denominator"
+        )
+    if _require(known_truth, "primary_contrast") != (
+        "complete_gate_minus_uncertainty_only_at_matched_coverage"
+    ):
+        raise ConfigurationError("The primary known-truth contrast has changed")
+    if _require(known_truth, "regret_relative_to_default_sign") != (
+        "default_utility_minus_deployed_utility"
+    ):
+        raise ConfigurationError("Relative-to-default regret sign has changed")
     expected_tie_rule = (
         "ascending_sha256_hex(canonical_json([trial_id,row_id,master_seed]))"
     )

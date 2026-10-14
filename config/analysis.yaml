@@ -208,6 +208,7 @@ comparators:
 known_truth_evaluation:
   primary_metric: "material_unsafe_acceptance_population_denominator"
   primary_contrast: "complete_gate_minus_uncertainty_only_at_matched_coverage"
+  regret_relative_to_default_sign: "default_utility_minus_deployed_utility"
   scenario_weighting: "equal"
   confidence_level: 0.95
   ablation_multiple_testing: "holm"

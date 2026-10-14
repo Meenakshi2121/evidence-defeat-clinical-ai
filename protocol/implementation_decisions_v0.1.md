@@ -148,7 +148,30 @@ useful software diagnostics, but are not the paper's final inference. Final
 confidence intervals will use the prespecified participant-level bootstrap
 that repeats the entire data-dependent pipeline.
 
-## 8. What remains open
+## 8. Random deferral and known-truth metric signs
+
+Random deferral is repeated 100 times. For repetition `r`, its unsigned 32-bit
+seed follows the locked model-seed hash rule with learner identifier
+`random_deferral` and repetition identifier in the fold position. Within each
+outer fold, all rows receive an equal ranking score and the seeded canonical
+identifier hash breaks the tie. This gives a deterministic, row-order-invariant
+pseudo-random sample with exactly the complete gate's acceptance count.
+
+Material unsafe acceptance uses the complete simulated population as its
+denominator. The accepted-actionable error rate uses accepted, materially
+actionable rows as its denominator and is unavailable when that denominator is
+zero. Known-truth policy utility is the mean potential-outcome utility under
+the deployed action. Oracle regret is `oracle utility - deployed utility`.
+Regret relative to the default is `default utility - deployed utility`, so a
+positive value means harm relative to the default and a negative value means
+improvement. Utility gain versus default is also retained with the opposite
+sign to make interpretation explicit.
+
+For continuous outcomes, the row-level materiality threshold on the original
+outcome scale is the prespecified standard-deviation margin multiplied by the
+sample standard deviation of that row's outer training fold.
+
+## 9. What remains open
 
 Before protocol lock, the project still requires:
 

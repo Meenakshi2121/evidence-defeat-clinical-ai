@@ -7,6 +7,7 @@ import numpy as np
 
 from evidence_defeat.seeds import (
     derive_model_seed,
+    derive_random_deferral_seed,
     derive_replicate_seed,
     named_generators,
 )
@@ -81,3 +82,10 @@ def test_model_seeds_are_distinct_by_fold_and_learner() -> None:
 
     assert base != derive_model_seed(20261013, "run", 1, "causal_forest_dml")
     assert base != derive_model_seed(20261013, "run", 0, "boosted_dr_learner")
+
+
+def test_random_deferral_seed_uses_locked_model_seed_rule() -> None:
+    observed = derive_random_deferral_seed(20261013, "run-a", 7)
+
+    assert observed == derive_model_seed(20261013, "run-a", 7, "random_deferral")
+    assert observed != derive_random_deferral_seed(20261013, "run-a", 8)

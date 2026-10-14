@@ -12,6 +12,8 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy.stats import norm
 
+from evidence_defeat.seeds import derive_random_deferral_seed
+
 CHECK_NAMES = (
     "record_adequacy",
     "reference_support",
@@ -28,6 +30,14 @@ class GateSelections:
     complete: NDArray[np.bool_]
     single_check: Mapping[str, NDArray[np.bool_]]
     leave_one_out: Mapping[str, NDArray[np.bool_]]
+
+
+@dataclass(frozen=True)
+class RandomDeferralSelections:
+    """Exact-coverage selections across deterministic random repetitions."""
+
+    acceptance: NDArray[np.bool_]
+    repetition_seeds: NDArray[np.uint32]
 
 
 def construct_gate(
@@ -249,6 +259,50 @@ def uncertainty_only_at_matched_coverage(
         row_ids=row_ids,
         master_seed=master_seed,
         accept_highest=True,
+    )
+
+
+def random_deferral_at_matched_coverage(
+    complete_gate: ArrayLike,
+    fold_ids: ArrayLike,
+    *,
+    trial_ids: ArrayLike | str,
+    row_ids: ArrayLike,
+    master_seed: int,
+    run_id: str,
+    repetitions: int = 100,
+) -> RandomDeferralSelections:
+    """Select hash-randomised participants at exact gate coverage per fold."""
+
+    target = _boolean_vector("complete_gate", complete_gate)
+    folds = np.asarray(fold_ids)
+    if folds.ndim != 1 or folds.shape[0] != target.shape[0]:
+        raise ValueError("fold_ids must have one entry per row")
+    if not run_id:
+        raise ValueError("run_id must not be empty")
+    if not isinstance(repetitions, int) or isinstance(repetitions, bool):
+        raise TypeError("repetitions must be an integer")
+    if repetitions < 1:
+        raise ValueError("repetitions must be positive")
+
+    acceptance = np.zeros((repetitions, target.shape[0]), dtype=bool)
+    seeds = np.zeros(repetitions, dtype=np.uint32)
+    tied_scores = np.zeros(target.shape[0], dtype=float)
+    for repetition_id in range(repetitions):
+        seed = derive_random_deferral_seed(master_seed, run_id, repetition_id)
+        seeds[repetition_id] = seed
+        acceptance[repetition_id] = match_coverage_within_folds(
+            tied_scores,
+            target,
+            folds,
+            trial_ids=trial_ids,
+            row_ids=row_ids,
+            master_seed=seed,
+            accept_highest=True,
+        )
+    return RandomDeferralSelections(
+        acceptance=acceptance,
+        repetition_seeds=seeds,
     )
 
 

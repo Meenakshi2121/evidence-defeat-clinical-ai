@@ -64,3 +64,18 @@ def derive_model_seed(
         separators=(",", ":"),
     ).encode("utf-8")
     return int.from_bytes(hashlib.sha256(payload).digest()[:8], "big") % (2**32)
+
+
+def derive_random_deferral_seed(
+    master_seed: int,
+    run_id: str,
+    repetition_id: int,
+) -> int:
+    """Derive a deterministic uint32 seed for one random-deferral repetition."""
+
+    return derive_model_seed(
+        master_seed,
+        run_id,
+        repetition_id,
+        "random_deferral",
+    )

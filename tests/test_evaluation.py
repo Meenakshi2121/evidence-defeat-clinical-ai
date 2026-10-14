@@ -15,6 +15,10 @@ from evidence_defeat.evaluation import (
     fit_outer_fold_policy_nuisance,
     select_population_default,
 )
+from evidence_defeat.known_truth import (
+    evaluate_cross_fitted_known_truth,
+    evaluate_random_deferral_known_truth,
+)
 from evidence_defeat.pipeline import run_cross_fitted_construction
 from evidence_defeat.preprocessing import CovariateSchema
 from evidence_defeat.simulation import SimulationScenario, generate_simulation
@@ -249,3 +253,56 @@ def test_evaluation_rejects_treatment_mismatched_to_construction(
             analysis_config=diagnostic_analysis,
             documented_treatment_probability=0.5,
         )
+
+
+def test_integrated_known_truth_metrics_use_prespecified_primary_contrast(
+    integrated_evaluation,
+    diagnostic_analysis: dict,
+) -> None:
+    generated, construction, evaluation, _ = integrated_evaluation
+
+    result = evaluate_cross_fitted_known_truth(
+        construction,
+        evaluation,
+        generated.mu0,
+        generated.mu1,
+        analysis_config=diagnostic_analysis,
+    )
+
+    assert set(result.metrics) == set(evaluation.policies)
+    complete = result.metrics["complete_gate"]
+    uncertainty = result.metrics["uncertainty_only"]
+    assert complete.material_unsafe_acceptance == pytest.approx(
+        complete.unsafe_accepted_count / complete.sample_size
+    )
+    assert result.primary_material_unsafe_acceptance_contrast == pytest.approx(
+        complete.material_unsafe_acceptance - uncertainty.material_unsafe_acceptance
+    )
+    np.testing.assert_allclose(result.materiality_margin, 0.02)
+
+
+def test_integrated_random_deferral_is_coverage_matched(
+    integrated_evaluation,
+    diagnostic_analysis: dict,
+) -> None:
+    generated, construction, evaluation, _ = integrated_evaluation
+
+    result = evaluate_random_deferral_known_truth(
+        construction,
+        evaluation,
+        generated.mu0,
+        generated.mu1,
+        analysis_config=diagnostic_analysis,
+        repetitions=7,
+    )
+
+    assert result.selections.acceptance.shape == (7, 240)
+    assert result.deployed_policies.shape == (7, 240)
+    assert len(result.metrics) == 7
+    for selected, metrics in zip(result.selections.acceptance, result.metrics):
+        assert metrics.coverage == pytest.approx(construction.gate.complete.mean())
+        for fold_id in np.unique(construction.fold_ids):
+            in_fold = construction.fold_ids == fold_id
+            assert selected[in_fold].sum() == construction.gate.complete[in_fold].sum()
+    assert np.isfinite(result.mean_material_unsafe_acceptance)
+    assert np.isfinite(result.mean_deployed_policy_utility)

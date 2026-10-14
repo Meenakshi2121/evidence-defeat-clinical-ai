@@ -10,6 +10,7 @@ from evidence_defeat.selection import (
     construct_gate,
     deterministic_tie_keys,
     match_coverage_within_folds,
+    random_deferral_at_matched_coverage,
     select_exact_count,
     uncertainty_only_at_matched_coverage,
     uncertainty_ranking_score,
@@ -178,4 +179,58 @@ def test_uncertainty_score_rejects_zero_width_intervals() -> None:
             [0.05],
             [0.05],
             materiality_margin=0.02,
+        )
+
+
+def test_random_deferral_matches_gate_count_in_every_fold_and_repetition() -> None:
+    gate = np.array([True, False, False, False, True, True, False, False])
+    folds = np.repeat([0, 1], 4)
+
+    result = random_deferral_at_matched_coverage(
+        gate,
+        folds,
+        trial_ids="trial-a",
+        row_ids=np.arange(8),
+        master_seed=20261013,
+        run_id="random-smoke",
+        repetitions=12,
+    )
+
+    assert result.acceptance.shape == (12, 8)
+    assert result.repetition_seeds.shape == (12,)
+    assert np.unique(result.repetition_seeds).shape[0] == 12
+    for selected in result.acceptance:
+        for fold in (0, 1):
+            in_fold = folds == fold
+            assert selected[in_fold].sum() == gate[in_fold].sum()
+
+
+def test_random_deferral_is_reproducible_and_row_order_invariant() -> None:
+    row_ids = np.arange(12)
+    gate = np.array([True, False, False, False, True, False] * 2)
+    folds = np.repeat([0, 1], 6)
+    first = random_deferral_at_matched_coverage(
+        gate,
+        folds,
+        trial_ids="trial-a",
+        row_ids=row_ids,
+        master_seed=20261013,
+        run_id="order-check",
+        repetitions=5,
+    )
+    permutation = np.array([8, 0, 11, 3, 6, 1, 9, 2, 7, 4, 10, 5])
+    second = random_deferral_at_matched_coverage(
+        gate[permutation],
+        folds[permutation],
+        trial_ids="trial-a",
+        row_ids=row_ids[permutation],
+        master_seed=20261013,
+        run_id="order-check",
+        repetitions=5,
+    )
+
+    np.testing.assert_array_equal(first.repetition_seeds, second.repetition_seeds)
+    for repetition_id in range(5):
+        assert set(row_ids[first.acceptance[repetition_id]]) == set(
+            row_ids[permutation][second.acceptance[repetition_id]]
         )

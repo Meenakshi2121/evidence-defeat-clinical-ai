@@ -131,3 +131,27 @@ def test_invalid_propensity_clip_is_rejected() -> None:
         validate_project_config(
             ProjectConfig(analysis, original.simulation, original.poc)
         )
+
+
+def test_unmatched_random_deferral_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["comparators"]["random_deferral"]["matched_coverage"] = False
+
+    with pytest.raises(ConfigurationError, match="Random deferral must match"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )
+
+
+def test_accepted_only_primary_safety_denominator_is_rejected() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["known_truth_evaluation"]["primary_metric"] = (
+        "material_error_among_accepted"
+    )
+
+    with pytest.raises(ConfigurationError, match="population denominator"):
+        validate_project_config(
+            ProjectConfig(analysis, original.simulation, original.poc)
+        )
