@@ -5,7 +5,7 @@ purpose: "Known-truth validation of evidence-defeat checks before real-outcome a
 
 reproducibility:
   master_seed: 20261013
-  replicate_seed_rule: "uint32(first_8_bytes(sha256(master_seed|scenario_id|replicate_id)))"
+  replicate_seed_rule: "int.from_bytes(first_8_bytes(sha256(master_seed|scenario_id|replicate_id)), big) modulo 2^32"
   independent_streams:
     - group
     - covariates
