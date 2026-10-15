@@ -4,7 +4,7 @@ adopted: "2026-10-14"
 purpose: "Permit transparent framework development while preserving an untouched validation phase"
 
 current_evidence_state:
-  scientific_performance_unblinded_in_this_repository: false
+  scientific_performance_unblinded_in_this_repository: true
   stage_c_scientific_unblinding_authorised: true
   stage_a_and_b_outputs_are_diagnostic_only: true
   rct_bench_patient_level_files_opened: false
