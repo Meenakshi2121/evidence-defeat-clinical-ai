@@ -87,7 +87,12 @@ def reduced_diagnostic_project() -> ProjectConfig:
     final["n_estimators"] = 20
     final["min_samples_leaf"] = 5
     final["n_jobs"] = 1
-    return ProjectConfig(analysis=analysis, simulation=simulation, poc=poc)
+    return ProjectConfig(
+        analysis=analysis,
+        simulation=simulation,
+        poc=poc,
+        development_validation=deepcopy(original.development_validation),
+    )
 
 
 def test_end_to_end_diagnostic_report_is_passed_and_disclosure_safe(
@@ -110,6 +115,7 @@ def test_end_to_end_diagnostic_report_is_passed_and_disclosure_safe(
     assert report.fingerprint.sample_size == 180
     assert set(report.fingerprint.configuration_sha256) == {
         "analysis",
+        "development_validation",
         "simulation",
         "poc",
         "combined",

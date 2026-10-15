@@ -382,7 +382,13 @@ def _timing_invariants(
             or bool(re.fullmatch(r"[0-9a-f]{64}", fingerprint.resample_indices_sha256))
         )
         and set(fingerprint.configuration_sha256)
-        == {"analysis", "simulation", "poc", "combined"}
+        == {
+            "analysis",
+            "simulation",
+            "poc",
+            "development_validation",
+            "combined",
+        }
         and bool(_COMMIT_PATTERN.fullmatch(fingerprint.code_commit))
         and fingerprint.repository_clean_at_start
     )

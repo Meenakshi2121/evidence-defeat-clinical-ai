@@ -166,6 +166,7 @@ def configuration_hashes(project: ProjectConfig) -> dict[str, str]:
         "analysis": project.analysis,
         "simulation": project.simulation,
         "poc": project.poc,
+        "development_validation": project.development_validation,
     }
     result = {name: canonical_sha256(value) for name, value in documents.items()}
     result["combined"] = canonical_sha256(documents)
@@ -539,7 +540,13 @@ def _evaluate_invariants(
         and fingerprint.sample_size == n
         and fingerprint.replicate_seed == generated.seed
         and set(fingerprint.configuration_sha256)
-        == {"analysis", "simulation", "poc", "combined"}
+        == {
+            "analysis",
+            "simulation",
+            "poc",
+            "development_validation",
+            "combined",
+        }
         and all(
             re.fullmatch(r"[0-9a-f]{64}", value)
             for value in fingerprint.configuration_sha256.values()

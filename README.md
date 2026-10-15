@@ -48,21 +48,30 @@ joint safety-and-access fairness audit.
 Nyāya motivates the logic of separately identifiable defeating conditions. It
 does not replace causal inference, statistical validation or clinical evidence.
 
-## Validation layers
+## Development and validation layers
 
-1. **Controlled simulation:** counterfactual truth is fully known.
-2. **Multitrial semi-synthetic benchmark:** real RCT covariates with generated
-   potential outcomes and known individual truth.
-3. **Real RCT evaluation:** held-out, doubly robust policy evaluation across all
-   trials meeting criteria fixed before outcomes are analysed.
-4. **Fairness audit:** raw and evidence-standardised group differences in
-   deferral, unsafe acceptance and policy regret.
+1. **Diagnostic feasibility:** disclosure-safe software, runtime and memory
+   checks; no scientific performance is exposed.
+2. **Controlled development:** the framework may be improved using a dedicated
+   synthetic development bank, with every candidate and result retained.
+3. **Development freeze:** one candidate, commit and configuration are reviewed,
+   registered and tagged before validation data are opened.
+4. **Independent validation:** untouched controlled simulations, real RCT
+   covariates with generated outcomes, and held-out real RCT evaluation.
+5. **Fairness audit:** raw and evidence-standardised group differences in
+   deferral, unsafe acceptance and policy regret, without a weighted composite.
 
 ## Current status
 
-Design stage only. No data from the proposed multitrial validation have been
-analysed. The protocol and eligibility rules must be reviewed and registered
-before outcome analysis begins.
+Pre-lock development stage only. Stage A software diagnostics passed and Stage
+B computational timing is in progress; neither stage exposes scientific
+performance. No data from the proposed multitrial validation have been
+analysed. A dedicated development bank must be specified before Stage C, and
+the final candidate must be reviewed and registered before validation begins.
+
+The dated development/validation boundary is defined in
+`protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
+the historical pre-amendment record.
 
 Earlier exploratory work using the International Stroke Trial informed the
 research question but will not be treated as independent validation. See
@@ -82,9 +91,11 @@ results/      Aggregate, disclosure-safe outputs only
 
 ## Reproducibility rule
 
-No confirmatory analysis will be run until the protocol is tagged and
-registered. Every post-lock change must be dated and classified as
-confirmatory, sensitivity or exploratory.
+Development is allowed only on its named synthetic bank and is fully logged.
+No independent validation will be run until one candidate is frozen, the
+protocol is tagged and registered, and validation sources remain untouched.
+Every post-freeze change must be dated and classified; a framework changed
+after validation requires new independent evidence.
 
 ## Pre-lock proof of concept
 

@@ -72,6 +72,7 @@ def test_reduced_stage_b_report_is_passed_and_disclosure_safe() -> None:
         analysis=analysis,
         simulation=deepcopy(original.simulation),
         poc=deepcopy(original.poc),
+        development_validation=deepcopy(original.development_validation),
     )
     spec = TimingRunSpec(
         timing_id="test_full_comparator",

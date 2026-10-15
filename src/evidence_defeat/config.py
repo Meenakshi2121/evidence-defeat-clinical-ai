@@ -15,11 +15,12 @@ class ConfigurationError(ValueError):
 
 @dataclass(frozen=True)
 class ProjectConfig:
-    """The three configuration documents needed before a diagnostic run."""
+    """The configuration documents needed before a diagnostic run."""
 
     analysis: dict[str, Any]
     simulation: dict[str, Any]
     poc: dict[str, Any]
+    development_validation: dict[str, Any]
 
 
 def load_yaml(path: str | Path) -> dict[str, Any]:
@@ -52,6 +53,7 @@ def validate_project_config(config: ProjectConfig) -> None:
     analysis = config.analysis
     simulation = config.simulation
     poc = config.poc
+    development_validation = config.development_validation
 
     master_seed = _require(analysis, "master_seed")
     if not isinstance(master_seed, int) or isinstance(master_seed, bool):
@@ -349,9 +351,231 @@ def validate_project_config(config: ProjectConfig) -> None:
     ):
         raise ConfigurationError("Stage B reporting save_only fields have changed")
 
+    _validate_development_validation(
+        development_validation,
+        analysis=analysis,
+        simulation=simulation,
+    )
+
     for prevalence in _all_declared_prevalences(simulation):
         if not 0.0 <= prevalence <= 1.0:
             raise ConfigurationError(f"Defect prevalence outside [0,1]: {prevalence}")
+
+
+def _validate_development_validation(
+    governance: dict[str, Any],
+    *,
+    analysis: dict[str, Any],
+    simulation: dict[str, Any],
+) -> None:
+    """Enforce separation between adaptive development and final validation."""
+
+    if _require(governance, "schema_version") != "0.2":
+        raise ConfigurationError("Development/validation schema version has changed")
+    if _require(governance, "status") != "draft_prelock_amendment":
+        raise ConfigurationError("Development/validation amendment status has changed")
+
+    evidence_state = _require(governance, "current_evidence_state")
+    expected_evidence_state = {
+        "scientific_performance_unblinded_in_this_repository": False,
+        "stage_a_and_b_outputs_are_diagnostic_only": True,
+        "rct_bench_patient_level_files_opened": False,
+        "confirmatory_validation_started": False,
+    }
+    for key, expected in expected_evidence_state.items():
+        if _require(evidence_state, key) is not expected:
+            raise ConfigurationError(
+                f"Current evidence-state declaration changed: {key}"
+            )
+
+    phases = _require(governance, "phase_boundaries")
+    diagnostics = _require(phases, "diagnostics")
+    expected_diagnostics = {
+        "stages": ["stage_a", "stage_b"],
+        "scientific_results_exposed": False,
+        "eligible_for_candidate_selection": False,
+        "eligible_for_confirmatory_evidence": False,
+    }
+    for key, expected in expected_diagnostics.items():
+        if _require(diagnostics, key) != expected:
+            raise ConfigurationError(f"Diagnostic-phase boundary changed: {key}")
+
+    development = _require(phases, "development")
+    if _require(development, "stage") != "stage_c":
+        raise ConfigurationError("Development must remain Stage C")
+    if _require(development, "status") != ("blocked_pending_reviewed_development_bank"):
+        raise ConfigurationError(
+            "Stage C must remain blocked until its development bank is reviewed"
+        )
+    if _require(development, "scientific_results_exposed") is not True:
+        raise ConfigurationError("Stage C must be explicitly declared unblinded")
+    if _require(development, "eligible_for_confirmatory_evidence") is not False:
+        raise ConfigurationError("Development results cannot be confirmatory evidence")
+
+    permitted_data = _require(development, "permitted_data")
+    prohibited_data = _require(development, "prohibited_data")
+    if permitted_data != ["controlled_synthetic_development_bank"]:
+        raise ConfigurationError("Stage C may use only its synthetic development bank")
+    expected_prohibited_data = {
+        "reserved_validation_simulation_bank",
+        "rct_bench_patient_level_files",
+        "real_trial_outcomes",
+    }
+    if not isinstance(prohibited_data, list) or set(prohibited_data) != (
+        expected_prohibited_data
+    ):
+        raise ConfigurationError("Stage C prohibited-data boundary has changed")
+    if set(permitted_data) & set(prohibited_data):
+        raise ConfigurationError("Development and prohibited data must be disjoint")
+
+    bank = _require(development, "development_bank_requirement")
+    if _require(bank, "specification_required_before_first_run") is not True:
+        raise ConfigurationError(
+            "A reviewed development-bank specification is required"
+        )
+    if _require(bank, "separate_scenario_ids_and_replicate_namespace") is not True:
+        raise ConfigurationError(
+            "Development and validation namespaces must be separate"
+        )
+    if _require(bank, "configuration_file") != "not_yet_created":
+        raise ConfigurationError(
+            "Stage C cannot be enabled by naming an unreviewed development bank"
+        )
+
+    freeze = _require(phases, "development_freeze")
+    if _require(freeze, "stage") != "stage_d":
+        raise ConfigurationError("Development freeze must remain Stage D")
+    expected_freeze_requirements = {
+        "one_final_candidate_identifier",
+        "clean_git_commit",
+        "configuration_hashes",
+        "complete_candidate_history",
+        "written_selection_rationale",
+        "supervisor_and_statistical_review",
+        "registered_protocol_v1_0",
+    }
+    freeze_requirements = _require(freeze, "requirements")
+    if not isinstance(freeze_requirements, list) or set(freeze_requirements) != (
+        expected_freeze_requirements
+    ):
+        raise ConfigurationError("Development-freeze requirements have changed")
+
+    pilot = _require(phases, "blinded_variance_pilot")
+    expected_pilot = {
+        "stage": "stage_e",
+        "runs_after_development_freeze": True,
+        "permitted_disclosures": [
+            "paired_primary_contrast_standard_deviation",
+            "runtime",
+            "memory",
+        ],
+        "prohibited_disclosures": [
+            "mean_effect_estimates",
+            "method_rankings",
+            "group_differences",
+        ],
+        "adaptations_after_pilot": [
+            "monte_carlo_replicate_count",
+            "computational_batching",
+        ],
+        "scientific_method_changes_allowed": False,
+    }
+    for key, expected in expected_pilot.items():
+        if _require(pilot, key) != expected:
+            raise ConfigurationError(f"Blinded-pilot boundary changed: {key}")
+
+    validation = _require(phases, "independent_validation")
+    expected_validation_choices = {
+        "stage": "stage_f",
+        "run_once_after_registration": True,
+        "development_data_reuse": False,
+        "confidence_interval": "two_sided_95_percent",
+        "support_rule": "upper_confidence_limit_below_zero",
+        "report_regardless_of_result": True,
+        "change_after_unblinding": (
+            "new_framework_version_and_new_independent_validation"
+        ),
+    }
+    for key, expected in expected_validation_choices.items():
+        if _require(validation, key) != expected:
+            raise ConfigurationError(f"Independent-validation boundary changed: {key}")
+    validation_sources = _require(validation, "sources")
+    if _require(validation_sources, "reserved_validation_simulation_bank") != (
+        "confirmatory_primary_safety_grid"
+    ):
+        raise ConfigurationError("The reserved simulation validation bank changed")
+    if "confirmatory_primary_safety_grid" not in simulation:
+        raise ConfigurationError("The reserved simulation validation bank is missing")
+    for source in ("rct_shaped_semisynthetic", "real_rct_outcomes"):
+        if _require(validation_sources, source) != "unopened_until_development_freeze":
+            raise ConfigurationError(f"Validation source opened too early: {source}")
+
+    known_truth = _require(analysis, "known_truth_evaluation")
+    if _require(validation, "primary_metric") != _require(
+        known_truth, "primary_metric"
+    ):
+        raise ConfigurationError("Validation primary metric disagrees with analysis")
+    if _require(validation, "primary_contrast") != _require(
+        known_truth, "primary_contrast"
+    ):
+        raise ConfigurationError("Validation primary contrast disagrees with analysis")
+
+    audit = _require(governance, "development_audit")
+    expected_audit_flags = {
+        "require_candidate_id": True,
+        "require_parent_candidate_id": True,
+        "require_pre_run_rationale": True,
+        "require_clean_git_commit": True,
+        "require_configuration_hashes": True,
+        "retain_all_candidate_results": True,
+        "retain_unsuccessful_candidates": True,
+        "prohibit_relabelling_as_confirmatory": True,
+    }
+    for key, expected in expected_audit_flags.items():
+        if _require(audit, key) is not expected:
+            raise ConfigurationError(f"Development-audit safeguard changed: {key}")
+    expected_metrics = {
+        "material_unsafe_acceptance_population_denominator",
+        "coverage",
+        "deployed_policy_utility",
+        "oracle_regret",
+        "regret_relative_to_default",
+        "raw_group_differences",
+        "evidence_standardised_group_differences",
+        "scenario_and_seed_stability",
+    }
+    mandatory_metrics = _require(audit, "mandatory_metrics")
+    if not isinstance(mandatory_metrics, list) or set(mandatory_metrics) != (
+        expected_metrics
+    ):
+        raise ConfigurationError("Development metric profile has changed")
+
+    selection = _require(governance, "candidate_selection")
+    expected_selection = {
+        "weighted_composite_score": False,
+        "inspect_complete_metric_profile": True,
+        "require_safety_utility_access_fairness_tradeoff": True,
+        "prefer_pareto_nondominated_candidates": True,
+        "simplicity_breaks_practical_ties": True,
+        "final_choice_requires_written_rationale": True,
+        "development_success_is_confirmatory_evidence": False,
+    }
+    for key, expected in expected_selection.items():
+        if _require(selection, key) is not expected:
+            raise ConfigurationError(f"Candidate-selection safeguard changed: {key}")
+
+    fairness = _require(governance, "fairness")
+    expected_fairness = {
+        "role": "safety_and_access_audit",
+        "weighted_fairness_composite": False,
+        "report_raw_and_evidence_standardised_separately": True,
+        "aggregate_improvement_cannot_hide_group_harm": True,
+    }
+    for key, expected in expected_fairness.items():
+        if _require(fairness, key) != expected:
+            raise ConfigurationError(f"Fairness-audit safeguard changed: {key}")
+    if _require(analysis, "fairness_audit", "weighted_composite_primary") is not False:
+        raise ConfigurationError("Analysis and governance fairness rules disagree")
 
 
 def _all_declared_prevalences(simulation: dict[str, Any]) -> list[float]:
@@ -371,6 +595,9 @@ def load_project_config(root: str | Path = ".") -> ProjectConfig:
         analysis=load_yaml(project_root / "config" / "analysis.yaml"),
         simulation=load_yaml(project_root / "config" / "simulation_scenarios.yaml"),
         poc=load_yaml(project_root / "config" / "poc.yaml"),
+        development_validation=load_yaml(
+            project_root / "config" / "development_validation.yaml"
+        ),
     )
     validate_project_config(config)
     return config
