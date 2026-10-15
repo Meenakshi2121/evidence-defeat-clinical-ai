@@ -48,21 +48,31 @@ joint safety-and-access fairness audit.
 Nyāya motivates the logic of separately identifiable defeating conditions. It
 does not replace causal inference, statistical validation or clinical evidence.
 
-## Validation layers
+## Development and validation layers
 
-1. **Controlled simulation:** counterfactual truth is fully known.
-2. **Multitrial semi-synthetic benchmark:** real RCT covariates with generated
-   potential outcomes and known individual truth.
-3. **Real RCT evaluation:** held-out, doubly robust policy evaluation across all
-   trials meeting criteria fixed before outcomes are analysed.
-4. **Fairness audit:** raw and evidence-standardised group differences in
-   deferral, unsafe acceptance and policy regret.
+1. **Diagnostic feasibility:** disclosure-safe software, runtime and memory
+   checks; no scientific performance is exposed.
+2. **Controlled development:** the framework may be improved using a dedicated
+   synthetic development bank, with every candidate and result retained.
+3. **Development freeze:** one candidate, commit and configuration are reviewed,
+   registered and tagged before validation data are opened.
+4. **Independent validation:** untouched controlled simulations, real RCT
+   covariates with generated outcomes, and held-out real RCT evaluation.
+5. **Fairness audit:** raw and evidence-standardised group differences in
+   deferral, unsafe acceptance and policy regret, without a weighted composite.
 
 ## Current status
 
-Design stage only. No data from the proposed multitrial validation have been
-analysed. The protocol and eligibility rules must be reviewed and registered
-before outcome analysis begins.
+Stage A software diagnostics and Stage B computational feasibility checks have
+passed; neither stage exposed scientific performance. The dedicated Stage C
+development bank and baseline candidate `C000` are now specified. Stage C is
+explicitly exploratory and unblinded, while the independent validation bank
+and proposed multitrial data remain unopened. The final candidate must still be
+reviewed, frozen and registered before validation begins.
+
+The dated development/validation boundary is defined in
+`protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
+the historical pre-amendment record.
 
 Earlier exploratory work using the International Stroke Trial informed the
 research question but will not be treated as independent validation. See
@@ -82,7 +92,59 @@ results/      Aggregate, disclosure-safe outputs only
 
 ## Reproducibility rule
 
-No confirmatory analysis will be run until the protocol is tagged and
-registered. Every post-lock change must be dated and classified as
-confirmatory, sensitivity or exploratory.
+Development is allowed only on its named synthetic bank and is fully logged.
+No independent validation will be run until one candidate is frozen, the
+protocol is tagged and registered, and validation sources remain untouched.
+Every post-freeze change must be dated and classified; a framework changed
+after validation requires new independent evidence.
 
+## Pre-lock proof of concept
+
+After the diagnostic runner has been committed and the worktree is clean:
+
+```bash
+poetry install
+poetry run evidence-defeat-poc plan
+poetry run evidence-defeat-poc smoke
+```
+
+The first command installs the repository's command-line entry point. `plan`
+validates and displays the frozen 12-run Stage A grid. `smoke` executes each
+replicate in an isolated process and writes ignored diagnostic reports under
+`results/poc/stage-a/`. These reports contain invariant statuses, runtime,
+memory and reproducibility fingerprints only. They intentionally conceal
+policy performance and method rankings.
+
+Stage B is deliberately run one timing unit at a time:
+
+```bash
+poetry run evidence-defeat-poc timing-plan
+poetry run evidence-defeat-poc timing-run --timing-id full_comparator_n500
+```
+
+The first timing unit is reviewed before authorising the `n=2,000` comparator
+and five bootstrap timing units. Stage B reports contain resource usage,
+invariant statuses and reproducibility fingerprints only.
+
+## Transparent Stage C development
+
+Stage C runs expose scientific simulation results and therefore require a
+clean, committed worktree. Inspect the plan before starting the baseline:
+
+```bash
+poetry install
+poetry run evidence-defeat-dev plan --candidate C000 --tier screening
+poetry run evidence-defeat-dev batch --candidate C000 --tier screening
+```
+
+The batch is resumable and writes ignored outputs under
+`results/development/stage-c/`. Each report records the candidate, code commit,
+configuration hashes, generated-data hash and fold hash. The summary reports
+safety, utility, access, check recovery, raw group gaps and
+evidence-standardised group gaps separately. It never calculates a weighted
+fairness composite or an automatic candidate score.
+
+Development results may motivate a new child candidate only after its parent,
+exact change, rationale and falsification criteria are appended to the
+candidate register and committed. They cannot be presented as independent
+validation.

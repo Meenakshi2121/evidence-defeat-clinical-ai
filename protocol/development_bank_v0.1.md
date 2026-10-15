@@ -1,0 +1,82 @@
+# Controlled development bank v0.1
+
+**Status:** Committed before the first Stage C scientific run
+
+**Date:** 15 October 2026
+
+**Machine-readable files:** `config/development_bank.yaml` and
+`config/development_candidates.yaml`
+
+## Purpose and evidential status
+
+This bank is used to construct and select the evidence-defeat framework. Its
+results are exploratory, unblinded and ineligible for confirmatory claims. It
+uses a separate `dev_v0_1__` scenario prefix and replicate identifiers of
+200000 or greater. The reserved validation grid, RCT Bench patient-level data
+and real trial outcomes remain prohibited throughout Stage C.
+
+## Non-compensatory gate
+
+For participant `i`, the candidate gate is
+
+```text
+G_i = D_i * O_i * M_i * U_i,
+```
+
+where every term is binary: record adequacy (`D`), reference support (`O`),
+model multiplicity (`M`) and decision certainty (`U`). Thus `G_i = 1` only when
+all four checks pass. This formalises the Nyāya-inspired evidence-defeat rule:
+one unresolved defeating condition cannot be cancelled by strength elsewhere.
+
+The primary development contrast is
+
+```text
+Delta_UA = UA_complete - UA_uncertainty_matched,
+```
+
+where `UA` is materially unsafe acceptance divided by the whole simulated
+population. Negative values favour the complete gate. This contrast is
+descriptive in Stage C; it does not validate the framework.
+
+## Tiers
+
+| Tier | Eligibility | Purpose |
+| --- | --- | --- |
+| Screening | Every pre-run candidate | Ten replicates of clean control, each single defect and combined defects at `n=500` |
+| Fairness stress | Retained candidates | Group-concentrated record, support and combined defects at two group prevalences and `n=2,000` |
+| Finalist robustness | Finalists only | Baseline-shape, effect-strength, outcome-type and group-shift variations at `n=2,000` |
+
+Promotion is manual and append-only. A later tier cannot be opened by changing
+the command line alone; the candidate status must first be changed with a
+written post-run decision in the candidate log.
+
+## Fairness audit
+
+For metric `m`, the raw group gap is
+
+```text
+Delta_m_raw = mean(m | A=1) - mean(m | A=0),
+```
+
+where `A` denotes the audited group. A separate evidence-standardised gap uses
+cross-fitted inverse-probability weights derived only from the four evidence
+scores. It asks whether a gap remains after mapping both groups to the pooled
+distribution of observed evidence conditions. Propensities are clipped to
+`[0.05, 0.95]`; weights are truncated at the first and ninety-ninth
+percentiles; balance and group sample sizes are reported.
+
+Raw gaps represent experienced access and harm. Standardised gaps are a
+diagnostic conditional on evidence conditions. Neither is a fairness
+guarantee, and they are never merged into a weighted fairness formula.
+
+## Candidate decisions
+
+Every report retains safety, utility, access, regret, check recovery, raw and
+standardised group gaps, scenario stability and seed stability. Candidate
+selection inspects the complete profile, prefers Pareto-nondominated options
+and uses simplicity only to break practical ties. There is no automatic pass,
+weighted composite or threshold search over a result already observed.
+
+Any revision becomes a new child candidate with its exact change, expected
+benefit, possible failure mode and falsification metrics committed before it is
+run. Rejected candidates and adverse results remain in the history.

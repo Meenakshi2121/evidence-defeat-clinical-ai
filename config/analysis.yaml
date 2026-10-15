@@ -1,0 +1,253 @@
+schema_version: "0.1"
+status: "draft_prelock"
+created: "2026-10-13"
+master_seed: 20261013
+
+data:
+  source_repository: "https://github.com/bingkaiwang/RCT_Bench-main"
+  source_commit: "b7b927e9d9ee71b16d0645cded909b35fc23d58b"
+  raw_data_committed: false
+  manifest_hash: "sha256"
+
+outcome:
+  orientation: "higher_utility_is_better"
+  binary_materiality_margin: 0.02
+  binary_margin_sensitivities: [0.01, 0.05]
+  continuous_materiality_margin_sd: 0.10
+  continuous_margin_sensitivities_sd: [0.05, 0.20]
+  continuous_scaling_sd_ddof: 1
+
+cross_fitting:
+  outer_folds: 5
+  outer_stratification: "treatment_only"
+  outer_splitter: "sklearn.model_selection.StratifiedKFold"
+  outer_shuffle: true
+  row_order_before_split: "ascending_string_row_id"
+  primary_seed: 20261013
+  sensitivity_seeds: [1729, 271828, 314159, 161803]
+  inner_folds: 3
+  held_out_outcomes_used_in_construction: false
+
+preprocessing:
+  continuous_imputation: "training_median"
+  categorical_imputation: "explicit_missing_level"
+  missing_indicators: true
+  categorical_encoding: "one_hot_handle_unknown_ignore"
+  treatment_used_for_imputation: false
+  outcome_used_for_imputation: false
+  scaling: "robust_scaler_when_required"
+
+propensity:
+  primary_source: "documented_randomisation_probability"
+  fallback_source: "outer_training_treatment_fraction"
+  clip: [0.05, 0.95]
+
+nuisance_outcome_model: &nuisance_outcome_model
+  class: "sklearn.ensemble.HistGradientBoostingRegressor"
+  parameters:
+    loss: "squared_error"
+    learning_rate: 0.05
+    max_iter: 200
+    max_leaf_nodes: 15
+    min_samples_leaf: 20
+    l2_regularization: 1.0
+    early_stopping: false
+    random_state: "derived_from_master_seed"
+
+learners:
+  primary:
+    id: "causal_forest_dml"
+    package: "econml"
+    package_version: "0.17.0"
+    class: "econml.dml.CausalForestDML"
+    role: ["individualised_policy", "uncertainty_check", "multiplicity_check"]
+    outcome_model: *nuisance_outcome_model
+    treatment_model:
+      class: "sklearn.dummy.DummyClassifier"
+      parameters:
+        strategy: "prior"
+    parameters:
+      discrete_treatment: true
+      cv: 3
+      mc_iters: 1
+      n_estimators: 1000
+      criterion: "het"
+      max_depth: null
+      min_samples_split: 20
+      min_samples_leaf: 10
+      max_features: "sqrt"
+      max_samples: 0.45
+      min_balancedness_tol: 0.45
+      honest: true
+      inference: true
+      fit_intercept: true
+      subforest_size: 4
+      n_jobs: -1
+      random_state: "derived_from_master_seed"
+    interval_alpha_primary: 0.05
+    interval_alpha_sensitivity: 0.10
+
+  interaction_model:
+    id: "penalised_interaction"
+    package: "scikit-learn"
+    role: ["multiplicity_check"]
+    design: "all_preprocessed_main_effects_plus_treatment_and_treatment_interactions"
+    binary_outcome:
+      class: "sklearn.linear_model.LogisticRegression"
+      parameters:
+        l1_ratio: 0.0
+        C: 1.0
+        solver: "lbfgs"
+        max_iter: 5000
+        fit_intercept: true
+        random_state: "derived_from_master_seed"
+      effect_scale: "predicted_probability_difference"
+    continuous_outcome:
+      class: "sklearn.linear_model.Ridge"
+      parameters:
+        alpha: 1.0
+        fit_intercept: true
+      effect_scale: "predicted_mean_difference"
+
+  doubly_robust:
+    id: "boosted_dr_learner"
+    package: "econml"
+    package_version: "0.17.0"
+    class: "econml.dr.DRLearner"
+    role: ["multiplicity_check"]
+    propensity_model:
+      class: "sklearn.dummy.DummyClassifier"
+      parameters:
+        strategy: "prior"
+    regression_model: *nuisance_outcome_model
+    final_model:
+      class: "sklearn.ensemble.RandomForestRegressor"
+      parameters:
+        n_estimators: 500
+        min_samples_leaf: 20
+        max_features: "sqrt"
+        bootstrap: true
+        n_jobs: -1
+        random_state: "derived_from_master_seed"
+    parameters:
+      cv: 3
+      mc_iters: 1
+      min_propensity: 0.05
+      discrete_outcome: false
+      random_state: "derived_from_master_seed"
+
+default_policy:
+  estimator: "training_fold_aipw_population_mean_difference"
+  treatment_1_rule: "estimated_mean_utility_difference_greater_than_materiality_margin"
+  otherwise: 0
+  held_out_outcomes_used: false
+
+policy_evaluation:
+  outcome_regression_structure: "separate_models_by_treatment_arm"
+  default_nuisance_predictions: "inner_cross_fitted_within_outer_training_fold"
+  heldout_nuisance_predictions: "fit_on_complete_outer_training_fold"
+  propensity_source_order: "documented_randomisation_probability_else_outer_training_fraction"
+  conditional_standard_errors_are_final_inference: false
+
+gate:
+  combination: "logical_and"
+  weighted_compensation: false
+  record_adequacy:
+    observed_fraction_minimum: 0.80
+    sensitivity_minima: [0.90, 1.00]
+    reject_dictionary_invalid_values: true
+  reference_support:
+    distance: "treatment_arm_specific_mean_knn_distance"
+    score: "maximum_across_treatment_arms"
+    k_formula: "min(50, max(10, ceil(sqrt(n_train))))"
+    training_calibration: "leave_one_out"
+    pass_quantile: 0.975
+    sensitivity_quantiles: [0.95, 0.99]
+  multiplicity:
+    direction_classes: ["treatment_0", "indifferent", "treatment_1"]
+    indifferent_region: "[-delta, +delta]"
+    minimum_estimators_supporting_primary_action: 2
+    materially_opposing_estimator_allowed: false
+  uncertainty:
+    primary_interval_alpha: 0.05
+    pass_rule: "interval_entirely_above_plus_delta_or_below_minus_delta"
+    sensitivity_interval_alpha: 0.10
+
+comparators:
+  population_default: true
+  ungated_individualisation: true
+  uncertainty_only:
+    matched_coverage: true
+    standard_error_from_interval: "(upper-lower)/(2*1.959963984540054)"
+    ranking_score: "(abs(effect)-delta)/standard_error"
+    accept: "highest_scores_to_exact_gate_count_within_outer_fold"
+  near_optimal_policy_disagreement:
+    matched_coverage: true
+    attribution: "coverage-matched adaptation of Sawarni_et_al_arXiv_2510.19672v3"
+    exact_replication_claimed: false
+    bootstrap_candidates_per_learner: 20
+    candidate_learners:
+      - "causal_forest_dml"
+      - "penalised_interaction"
+      - "boosted_dr_learner"
+    candidate_value_estimator: "inner_cross_fitted_aipw"
+    near_optimal_rule: "within_one_standard_error_of_best_training_value"
+    minimum_near_optimal_policies: 5
+    fallback_if_fewer: "include_next_best_until_five_and_flag"
+    disagreement_score: "1-max(vote_fraction_treatment_0,vote_fraction_treatment_1)"
+    accept: "lowest_scores_to_exact_gate_count_within_outer_fold"
+  random_deferral:
+    matched_coverage: true
+    repetitions: 100
+    seeds: "derived_from_master_seed"
+  single_check_selectors: true
+  leave_one_check_out_ablations: true
+  tie_breaking: "ascending_sha256_hex(canonical_json([trial_id,row_id,master_seed]))"
+  deferred_action: "same_population_default_as_complete_gate"
+
+known_truth_evaluation:
+  primary_metric: "material_unsafe_acceptance_population_denominator"
+  primary_contrast: "complete_gate_minus_uncertainty_only_at_matched_coverage"
+  regret_relative_to_default_sign: "default_utility_minus_deployed_utility"
+  scenario_weighting: "equal"
+  confidence_level: 0.95
+  ablation_multiple_testing: "holm"
+  secondary_metrics:
+    - "coverage"
+    - "material_error_among_accepted_actionable_cases"
+    - "deployed_policy_utility"
+    - "oracle_regret"
+    - "regret_relative_to_default"
+    - "coverage_safety_frontier"
+
+real_outcome_evaluation:
+  estimator: "cross_fitted_aipw"
+  full_pipeline_bootstrap_repetitions: 500
+  bootstrap_stratification: "treatment"
+  confidence_level: 0.95
+  primary_across_trial_weighting: "equal_trial"
+  sensitivity_weighting: ["sample_size", "random_effects"]
+
+fairness_audit:
+  weighted_composite_primary: false
+  minimum_group_n: 100
+  minimum_metric_denominator: 20
+  report_raw: true
+  report_evidence_standardised: true
+  evidence_scores:
+    - "record_completeness"
+    - "support_distance"
+    - "estimator_disagreement"
+    - "decision_uncertainty"
+  standardisation: "cross_fitted_group_propensity_weighting_to_pooled_evidence_distribution"
+  weight_truncation_percentiles: [1, 99]
+  balance_threshold_absolute_smd: 0.10
+
+reproducibility:
+  deterministic_hash_ties: true
+  model_seed_rule: "int.from_bytes(first_8_bytes(sha256(canonical_json([master_seed,run_id,fold_id,learner_id]))),big) modulo 2^32"
+  save_fold_assignments: true
+  save_run_fingerprint: true
+  save_package_versions: true
+  save_data_checksums: true
+  allow_threshold_tuning_on_confirmatory_results: false

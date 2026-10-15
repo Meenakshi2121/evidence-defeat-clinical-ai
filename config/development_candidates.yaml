@@ -1,0 +1,27 @@
+schema_version: "0.1"
+status: "stage_c_candidate_register"
+created: "2026-10-15"
+selection_rule: "complete_metric_profile_then_pareto_review_with_simplicity_as_tiebreaker"
+weighted_composite_score: false
+
+allowed_analysis_override_paths:
+  - "gate.record_adequacy.observed_fraction_minimum"
+  - "gate.reference_support.pass_quantile"
+  - "gate.multiplicity.minimum_estimators_supporting_primary_action"
+  - "learners.primary.interval_alpha_primary"
+
+candidates:
+  C000:
+    parent_id: null
+    status: "pre_run_committed"
+    label: "Baseline four-check non-compensatory gate"
+    rationale: "Establish the development-bank baseline before any adaptation."
+    intended_change: "No change from the v0.1 four-check gate."
+    expected_benefit: "Distinct evidence defects should reduce unsafe accepted recommendations beyond uncertainty-only deferral at matched coverage."
+    possible_failure_mode: "Additional checks may mainly reduce access without concentrating safety gains."
+    falsification_metrics:
+      - "primary unsafe-acceptance contrast is non-negative"
+      - "regret relative to default increases materially"
+      - "group harms remain after evidence standardisation"
+    analysis_overrides: {}
+    complexity_rank: 1
