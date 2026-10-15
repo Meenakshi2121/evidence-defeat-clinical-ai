@@ -25,7 +25,7 @@ def test_project_configuration_is_valid() -> None:
     assert config.poc["stage_b_reporting"]["scientific_results_exposed"] is False
     assert (
         config.development_validation["phase_boundaries"]["development"]["status"]
-        == "blocked_pending_reviewed_development_bank"
+        == "ready_for_transparent_development"
     )
 
 

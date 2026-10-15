@@ -63,11 +63,12 @@ does not replace causal inference, statistical validation or clinical evidence.
 
 ## Current status
 
-Pre-lock development stage only. Stage A software diagnostics passed and Stage
-B computational timing is in progress; neither stage exposes scientific
-performance. No data from the proposed multitrial validation have been
-analysed. A dedicated development bank must be specified before Stage C, and
-the final candidate must be reviewed and registered before validation begins.
+Stage A software diagnostics and Stage B computational feasibility checks have
+passed; neither stage exposed scientific performance. The dedicated Stage C
+development bank and baseline candidate `C000` are now specified. Stage C is
+explicitly exploratory and unblinded, while the independent validation bank
+and proposed multitrial data remain unopened. The final candidate must still be
+reviewed, frozen and registered before validation begins.
 
 The dated development/validation boundary is defined in
 `protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
@@ -125,3 +126,25 @@ The first timing unit is reviewed before authorising the `n=2,000` comparator
 and five bootstrap timing units. Stage B reports contain resource usage,
 invariant statuses and reproducibility fingerprints only.
 
+## Transparent Stage C development
+
+Stage C runs expose scientific simulation results and therefore require a
+clean, committed worktree. Inspect the plan before starting the baseline:
+
+```bash
+poetry install
+poetry run evidence-defeat-dev plan --candidate C000 --tier screening
+poetry run evidence-defeat-dev batch --candidate C000 --tier screening
+```
+
+The batch is resumable and writes ignored outputs under
+`results/development/stage-c/`. Each report records the candidate, code commit,
+configuration hashes, generated-data hash and fold hash. The summary reports
+safety, utility, access, check recovery, raw group gaps and
+evidence-standardised group gaps separately. It never calculates a weighted
+fairness composite or an automatic candidate score.
+
+Development results may motivate a new child candidate only after its parent,
+exact change, rationale and falsification criteria are appended to the
+candidate register and committed. They cannot be presented as independent
+validation.

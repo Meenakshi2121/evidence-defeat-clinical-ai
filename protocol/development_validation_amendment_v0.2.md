@@ -1,8 +1,11 @@
 # Development and independent-validation amendment v0.2
 
-**Status:** Draft for supervisor and statistical review; not registered
+**Status:** Operational for transparent development; not registered or externally reviewed
+
 **Date:** 14 October 2026
+
 **Applies to:** Protocol v0.1 and the computational plan from Stage C onward
+
 **Machine-readable specification:** `config/development_validation.yaml`
 
 ## 1. Reason for this amendment
@@ -24,6 +27,9 @@ runtime, memory and reproducibility fingerprints. Stage B has the same
 disclosure restriction. RCT Bench patient-level files and real trial outcomes
 have not been opened. The change therefore precedes scientific unblinding and
 does not respond to a favourable or unfavourable result from the new pipeline.
+The amendment now authorises Stage C scientific unblinding; the evidence-state
+flag must be changed from `false` to `true` immediately after the first
+successful development report is inspected.
 
 ## 2. What remains unchanged
 
@@ -56,8 +62,9 @@ fairness score will determine the conclusion.
 After diagnostic feasibility is complete, scientific outputs may be examined
 only on a dedicated controlled-simulation development bank. This bank must
 have its own scenario identifiers and replicate namespace and must be reviewed
-and committed before its first run. Until that specification exists, Stage C
-is blocked.
+and committed before its first run. Development bank v0.1 and baseline
+candidate `C000` now meet this internal pre-run requirement; external review is
+still required before the final development freeze.
 
 Development may alter check definitions, logical architecture, thresholds,
 learners, the population default and implementation details. It may not use

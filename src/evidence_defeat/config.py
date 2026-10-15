@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -21,6 +23,14 @@ class ProjectConfig:
     simulation: dict[str, Any]
     poc: dict[str, Any]
     development_validation: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class DevelopmentConfig:
+    """The isolated Stage C development bank and candidate register."""
+
+    bank: dict[str, Any]
+    candidates: dict[str, Any]
 
 
 def load_yaml(path: str | Path) -> dict[str, Any]:
@@ -376,8 +386,16 @@ def _validate_development_validation(
         raise ConfigurationError("Development/validation amendment status has changed")
 
     evidence_state = _require(governance, "current_evidence_state")
+    unblinded = _require(
+        evidence_state,
+        "scientific_performance_unblinded_in_this_repository",
+    )
+    if not isinstance(unblinded, bool):
+        raise ConfigurationError(
+            "The scientific-unblinding declaration must be Boolean"
+        )
     expected_evidence_state = {
-        "scientific_performance_unblinded_in_this_repository": False,
+        "stage_c_scientific_unblinding_authorised": True,
         "stage_a_and_b_outputs_are_diagnostic_only": True,
         "rct_bench_patient_level_files_opened": False,
         "confirmatory_validation_started": False,
@@ -403,10 +421,8 @@ def _validate_development_validation(
     development = _require(phases, "development")
     if _require(development, "stage") != "stage_c":
         raise ConfigurationError("Development must remain Stage C")
-    if _require(development, "status") != ("blocked_pending_reviewed_development_bank"):
-        raise ConfigurationError(
-            "Stage C must remain blocked until its development bank is reviewed"
-        )
+    if _require(development, "status") != "ready_for_transparent_development":
+        raise ConfigurationError("Stage C development status has changed")
     if _require(development, "scientific_results_exposed") is not True:
         raise ConfigurationError("Stage C must be explicitly declared unblinded")
     if _require(development, "eligible_for_confirmatory_evidence") is not False:
@@ -437,9 +453,17 @@ def _validate_development_validation(
         raise ConfigurationError(
             "Development and validation namespaces must be separate"
         )
-    if _require(bank, "configuration_file") != "not_yet_created":
+    if _require(bank, "configuration_file") != "config/development_bank.yaml":
+        raise ConfigurationError("The Stage C development-bank path has changed")
+    if _require(bank, "candidate_configuration_file") != (
+        "config/development_candidates.yaml"
+    ):
+        raise ConfigurationError("The Stage C candidate-register path has changed")
+    if _require(bank, "author_reviewed_before_first_run") is not True:
+        raise ConfigurationError("The development bank requires author review")
+    if _require(bank, "externally_reviewed") is not False:
         raise ConfigurationError(
-            "Stage C cannot be enabled by naming an unreviewed development bank"
+            "The development bank must not be described as externally reviewed"
         )
 
     freeze = _require(phases, "development_freeze")
@@ -601,3 +625,322 @@ def load_project_config(root: str | Path = ".") -> ProjectConfig:
     )
     validate_project_config(config)
     return config
+
+
+def load_development_config(
+    root: str | Path = ".",
+    *,
+    project: ProjectConfig | None = None,
+) -> DevelopmentConfig:
+    """Load and validate the isolated Stage C development specification."""
+
+    project_root = Path(root)
+    if project is None:
+        project = load_project_config(project_root)
+    config = DevelopmentConfig(
+        bank=load_yaml(project_root / "config" / "development_bank.yaml"),
+        candidates=load_yaml(project_root / "config" / "development_candidates.yaml"),
+    )
+    validate_development_config(project, config)
+    return config
+
+
+def validate_development_config(
+    project: ProjectConfig,
+    config: DevelopmentConfig,
+) -> None:
+    """Enforce Stage C namespace, candidate, and reporting boundaries."""
+
+    bank = config.bank
+    candidates = config.candidates
+    if _require(bank, "schema_version") != "0.1":
+        raise ConfigurationError("Development-bank schema version has changed")
+    if _require(bank, "status") != "committed_for_stage_c_development":
+        raise ConfigurationError("Development bank is not committed for Stage C")
+    if _require(bank, "scientific_role") != ("exploratory_method_development_only"):
+        raise ConfigurationError("Development-bank scientific role has changed")
+    if _require(bank, "eligible_for_confirmatory_evidence") is not False:
+        raise ConfigurationError("Stage C cannot be confirmatory evidence")
+    if _require(bank, "external_reviewed") is not False:
+        raise ConfigurationError("Stage C cannot claim external review")
+
+    separation = _require(bank, "separation")
+    expected_separation = {
+        "permitted_source": "controlled_synthetic_development_bank",
+        "scenario_id_prefix": "dev_v0_1__",
+        "replicate_id_minimum": 200000,
+        "reserved_validation_grid_access": False,
+        "rct_bench_patient_level_access": False,
+        "real_trial_outcome_access": False,
+    }
+    for key, expected in expected_separation.items():
+        if _require(separation, key) != expected:
+            raise ConfigurationError(f"Development separation changed: {key}")
+
+    reporting = _require(bank, "reporting")
+    expected_reporting = {
+        "output_root": "results/development/stage-c",
+        "require_clean_git": True,
+        "process_isolation_per_run": True,
+        "retain_every_candidate_and_run": True,
+        "overwrite_existing_output": False,
+    }
+    for key, expected in expected_reporting.items():
+        if _require(reporting, key) != expected:
+            raise ConfigurationError(f"Development reporting changed: {key}")
+
+    tiers = _require(bank, "tiers")
+    if not isinstance(tiers, dict) or set(tiers) != {
+        "screening",
+        "fairness_stress",
+        "finalist_robustness",
+    }:
+        raise ConfigurationError("Development tiers have changed")
+    scenario_ids: set[str] = set()
+    replicate_ids: set[int] = set()
+    prefix = _require(separation, "scenario_id_prefix")
+    minimum_replicate = _require(separation, "replicate_id_minimum")
+    for tier_name, tier in tiers.items():
+        _require_nonempty_text(tier, "purpose", context=tier_name)
+        if _require(tier, "candidate_scope") not in {
+            "all_candidates",
+            "retained_candidates_only",
+            "finalists_only",
+        }:
+            raise ConfigurationError(f"Invalid candidate scope for {tier_name}")
+        raw_replicates = _require(tier, "replicate_ids")
+        if not isinstance(raw_replicates, list) or not raw_replicates:
+            raise ConfigurationError(f"{tier_name}.replicate_ids must be non-empty")
+        for replicate_id in raw_replicates:
+            if (
+                not isinstance(replicate_id, int)
+                or isinstance(replicate_id, bool)
+                or replicate_id < minimum_replicate
+            ):
+                raise ConfigurationError(
+                    f"Invalid Stage C replicate identifier in {tier_name}"
+                )
+            if replicate_id in replicate_ids:
+                raise ConfigurationError("Stage C replicate namespaces overlap")
+            replicate_ids.add(replicate_id)
+        raw_scenarios = _require(tier, "scenarios")
+        if not isinstance(raw_scenarios, list) or not raw_scenarios:
+            raise ConfigurationError(f"{tier_name}.scenarios must be non-empty")
+        for scenario in raw_scenarios:
+            _validate_development_scenario(scenario, prefix=prefix)
+            scenario_id = _require(scenario, "id")
+            if scenario_id in scenario_ids:
+                raise ConfigurationError("Development scenario identifiers repeat")
+            scenario_ids.add(scenario_id)
+
+    required_outputs = set(_require(bank, "mandatory_outputs"))
+    governance_outputs = set(
+        _require(
+            project.development_validation, "development_audit", "mandatory_metrics"
+        )
+    )
+    if not governance_outputs.issubset(required_outputs):
+        raise ConfigurationError("Development bank omits mandatory governance metrics")
+    prohibited_outputs = set(_require(bank, "prohibited_outputs"))
+    if prohibited_outputs != {
+        "weighted_fairness_composite",
+        "single_weighted_candidate_score",
+    }:
+        raise ConfigurationError("Development-bank prohibited outputs changed")
+
+    if _require(candidates, "schema_version") != "0.1":
+        raise ConfigurationError("Candidate-register schema version has changed")
+    if _require(candidates, "status") != "stage_c_candidate_register":
+        raise ConfigurationError("Candidate register has the wrong status")
+    if _require(candidates, "weighted_composite_score") is not False:
+        raise ConfigurationError("Candidate selection cannot use a weighted score")
+    if _require(candidates, "selection_rule") != (
+        "complete_metric_profile_then_pareto_review_with_simplicity_as_tiebreaker"
+    ):
+        raise ConfigurationError("Candidate-selection rule has changed")
+
+    allowed_paths = _require(candidates, "allowed_analysis_override_paths")
+    if not isinstance(allowed_paths, list) or len(set(allowed_paths)) != len(
+        allowed_paths
+    ):
+        raise ConfigurationError("Candidate override paths must be a unique list")
+    expected_paths = {
+        "gate.record_adequacy.observed_fraction_minimum",
+        "gate.reference_support.pass_quantile",
+        "gate.multiplicity.minimum_estimators_supporting_primary_action",
+        "learners.primary.interval_alpha_primary",
+    }
+    if set(allowed_paths) != expected_paths:
+        raise ConfigurationError("Candidate override allow-list has changed")
+
+    register = _require(candidates, "candidates")
+    if not isinstance(register, dict) or not register:
+        raise ConfigurationError("At least one Stage C candidate is required")
+    for candidate_id, candidate in register.items():
+        _validate_candidate(candidate_id, candidate, register, set(allowed_paths))
+        candidate_analysis_config(project, config, candidate_id)
+
+
+def candidate_analysis_config(
+    project: ProjectConfig,
+    development: DevelopmentConfig,
+    candidate_id: str,
+) -> dict[str, Any]:
+    """Return an analysis configuration with one candidate's allowed overrides."""
+
+    register = _require(development.candidates, "candidates")
+    if candidate_id not in register:
+        raise ConfigurationError(f"Unknown Stage C candidate: {candidate_id}")
+    analysis = deepcopy(project.analysis)
+    overrides = _require(register[candidate_id], "analysis_overrides")
+    for path, value in overrides.items():
+        _set_nested_value(analysis, path, value)
+    _validate_candidate_analysis_values(analysis)
+    return analysis
+
+
+def _validate_development_scenario(
+    scenario: dict[str, Any],
+    *,
+    prefix: str,
+) -> None:
+    scenario_id = _require(scenario, "id")
+    if not isinstance(scenario_id, str) or not scenario_id.startswith(prefix):
+        raise ConfigurationError("Development scenario is outside its namespace")
+    sample_size = _require(scenario, "sample_size")
+    if (
+        not isinstance(sample_size, int)
+        or isinstance(sample_size, bool)
+        or sample_size < 100
+    ):
+        raise ConfigurationError("Development sample sizes must be at least 100")
+    choices = {
+        "defect": {
+            "none",
+            "clean_control",
+            "record_adequacy",
+            "reference_support",
+            "model_multiplicity",
+            "decision_uncertainty",
+            "combined",
+        },
+        "outcome_type": {"binary", "continuous"},
+        "baseline_shape": {"linear", "nonlinear"},
+        "effect_strength": {"absent", "moderate", "strong"},
+        "defect_allocation": {"equal", "group_concentrated"},
+    }
+    for key, allowed in choices.items():
+        if _require(scenario, key) not in allowed:
+            raise ConfigurationError(f"Invalid development scenario value: {key}")
+    prevalence = _require(scenario, "group_prevalence")
+    if not isinstance(prevalence, (int, float)) or isinstance(prevalence, bool):
+        raise ConfigurationError("group_prevalence must be numeric")
+    if not 0.0 < float(prevalence) < 1.0:
+        raise ConfigurationError("group_prevalence must lie inside (0, 1)")
+    coefficient = _require(scenario, "group_prognostic_coefficient")
+    if not isinstance(coefficient, (int, float)) or isinstance(coefficient, bool):
+        raise ConfigurationError("group_prognostic_coefficient must be numeric")
+
+
+def _validate_candidate(
+    candidate_id: str,
+    candidate: dict[str, Any],
+    register: dict[str, Any],
+    allowed_paths: set[str],
+) -> None:
+    if not re.fullmatch(r"C\d{3}", candidate_id):
+        raise ConfigurationError(f"Invalid candidate identifier: {candidate_id}")
+    parent_id = _require(candidate, "parent_id")
+    if parent_id is not None and parent_id not in register:
+        raise ConfigurationError(f"Unknown parent candidate: {parent_id}")
+    if parent_id == candidate_id:
+        raise ConfigurationError("A candidate cannot be its own parent")
+    if _require(candidate, "status") not in {
+        "pre_run_committed",
+        "retained",
+        "rejected",
+        "finalist",
+    }:
+        raise ConfigurationError(f"Invalid status for candidate {candidate_id}")
+    for key in (
+        "label",
+        "rationale",
+        "intended_change",
+        "expected_benefit",
+        "possible_failure_mode",
+    ):
+        _require_nonempty_text(candidate, key, context=candidate_id)
+    falsification = _require(candidate, "falsification_metrics")
+    if not isinstance(falsification, list) or not falsification:
+        raise ConfigurationError(
+            f"Candidate {candidate_id} needs falsification metrics"
+        )
+    overrides = _require(candidate, "analysis_overrides")
+    if not isinstance(overrides, dict):
+        raise ConfigurationError(
+            f"Candidate {candidate_id} overrides must be a mapping"
+        )
+    unknown = set(overrides) - allowed_paths
+    if unknown:
+        raise ConfigurationError(
+            f"Candidate {candidate_id} uses prohibited overrides: {sorted(unknown)}"
+        )
+    complexity = _require(candidate, "complexity_rank")
+    if (
+        not isinstance(complexity, int)
+        or isinstance(complexity, bool)
+        or complexity < 1
+    ):
+        raise ConfigurationError(
+            f"Candidate {candidate_id} complexity must be positive"
+        )
+
+
+def _validate_candidate_analysis_values(analysis: dict[str, Any]) -> None:
+    observed = _require(
+        analysis, "gate", "record_adequacy", "observed_fraction_minimum"
+    )
+    support = _require(analysis, "gate", "reference_support", "pass_quantile")
+    supporting = _require(
+        analysis,
+        "gate",
+        "multiplicity",
+        "minimum_estimators_supporting_primary_action",
+    )
+    alpha = _require(analysis, "learners", "primary", "interval_alpha_primary")
+    if not 0.0 <= float(observed) <= 1.0:
+        raise ConfigurationError("Record threshold must lie in [0, 1]")
+    if not 0.0 < float(support) < 1.0:
+        raise ConfigurationError("Support quantile must lie inside (0, 1)")
+    if (
+        not isinstance(supporting, int)
+        or isinstance(supporting, bool)
+        or not 1 <= supporting <= 3
+    ):
+        raise ConfigurationError("Multiplicity support count must be 1, 2, or 3")
+    if not 0.0 < float(alpha) < 1.0:
+        raise ConfigurationError("Interval alpha must lie inside (0, 1)")
+
+
+def _set_nested_value(mapping: dict[str, Any], path: str, value: Any) -> None:
+    keys = path.split(".")
+    current = mapping
+    for key in keys[:-1]:
+        if key not in current or not isinstance(current[key], dict):
+            raise ConfigurationError(f"Candidate override path does not exist: {path}")
+        current = current[key]
+    if keys[-1] not in current:
+        raise ConfigurationError(f"Candidate override path does not exist: {path}")
+    current[keys[-1]] = value
+
+
+def _require_nonempty_text(
+    mapping: dict[str, Any],
+    key: str,
+    *,
+    context: str,
+) -> str:
+    value = _require(mapping, key)
+    if not isinstance(value, str) or not value.strip():
+        raise ConfigurationError(f"{context}.{key} must be non-empty text")
+    return value

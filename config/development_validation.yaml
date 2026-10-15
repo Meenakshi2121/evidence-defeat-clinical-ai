@@ -5,6 +5,7 @@ purpose: "Permit transparent framework development while preserving an untouched
 
 current_evidence_state:
   scientific_performance_unblinded_in_this_repository: false
+  stage_c_scientific_unblinding_authorised: true
   stage_a_and_b_outputs_are_diagnostic_only: true
   rct_bench_patient_level_files_opened: false
   confirmatory_validation_started: false
@@ -18,7 +19,7 @@ phase_boundaries:
 
   development:
     stage: stage_c
-    status: "blocked_pending_reviewed_development_bank"
+    status: "ready_for_transparent_development"
     scientific_results_exposed: true
     eligible_for_confirmatory_evidence: false
     permitted_data:
@@ -37,7 +38,10 @@ phase_boundaries:
     development_bank_requirement:
       specification_required_before_first_run: true
       separate_scenario_ids_and_replicate_namespace: true
-      configuration_file: "not_yet_created"
+      configuration_file: "config/development_bank.yaml"
+      candidate_configuration_file: "config/development_candidates.yaml"
+      author_reviewed_before_first_run: true
+      externally_reviewed: false
 
   development_freeze:
     stage: stage_d
