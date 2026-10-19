@@ -169,6 +169,7 @@ gate:
     minimum_estimators_supporting_primary_action: 2
     materially_opposing_estimator_allowed: false
   uncertainty:
+    essential: true
     primary_interval_alpha: 0.05
     pass_rule: "interval_entirely_above_plus_delta_or_below_minus_delta"
     sensitivity_interval_alpha: 0.10

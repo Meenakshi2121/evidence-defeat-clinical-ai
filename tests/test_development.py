@@ -114,6 +114,12 @@ def test_end_to_end_development_report_is_explicitly_nonconfirmatory(
     }
     assert "complete_gate" in payload["results"]["methods"]
     assert "uncertainty_only" in payload["results"]["methods"]
+    assert payload["results"]["essential_checks"] == [
+        "record_adequacy",
+        "reference_support",
+        "model_multiplicity",
+        "decision_uncertainty",
+    ]
     assert "raw" in payload["results"]["fairness_audit"]
     assert "evidence_standardised" in payload["results"]["fairness_audit"]
 
@@ -150,6 +156,38 @@ def test_development_summary_is_descriptive_not_a_weighted_decision(
     assert "check_recovery" in scenario
     assert "fairness_standardisation" in scenario
     assert "No automatic pass/fail or weighted score" in summary["candidate_decision"]
+
+
+def test_c001_uses_three_essential_checks_and_keeps_uncertainty_comparator(
+    reduced_development_inputs: tuple[ProjectConfig, DevelopmentConfig],
+) -> None:
+    project, development = reduced_development_inputs
+    spec = plan_development_runs(
+        project,
+        development,
+        "C001",
+        tier="screening",
+    )[0]
+
+    report = execute_development_run(
+        project,
+        development,
+        spec,
+        code_commit="f" * 40,
+        git_branch="protocol-v0.1",
+        repository_clean_at_start=True,
+    )
+    payload = report.to_dict()
+
+    assert report.passed
+    assert payload["results"]["essential_checks"] == [
+        "record_adequacy",
+        "reference_support",
+        "model_multiplicity",
+    ]
+    assert "uncertainty_only" in payload["results"]["methods"]
+    assert "single_decision_uncertainty" in payload["results"]["methods"]
+    assert "without_decision_uncertainty" not in payload["results"]["methods"]
 
 
 def test_dirty_repository_is_rejected_before_development_execution(

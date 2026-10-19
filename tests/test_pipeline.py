@@ -139,7 +139,9 @@ def test_cross_fitted_construction_is_complete_and_matches_fold_coverage(
     assert len(result.folds) == 3
     np.testing.assert_array_equal(result.row_ids, frame["row_id"].astype(str))
 
-    expected_complete = np.logical_and.reduce(list(result.checks.values()))
+    expected_complete = np.logical_and.reduce(
+        [result.checks[name] for name in result.gate.essential_checks]
+    )
     np.testing.assert_array_equal(result.gate.complete, expected_complete)
     for check in result.checks.values():
         assert check.dtype == np.bool_

@@ -134,3 +134,15 @@ Protocol v0.1 and computational plan v0.1 remain in the repository as the
 historical pre-amendment record. This amendment supersedes their restrictions
 on scientific inspection and method adaptation from Stage C onward. It does
 not retrospectively change the status of any earlier output.
+
+## 6. Stage C status update
+
+The C000 screening result was first inspected on 15 October 2026 and the
+machine-readable evidence-state flag was changed to record scientific
+unblinding. On 19 October 2026, before any C001 run, C001 was specified as a
+results-informed child candidate that removes decision uncertainty from the
+set of essential gate conditions while retaining uncertainty-only deferral as
+the primary exact-matched-coverage comparator. The complete rationale, adverse
+C000 findings and C001 falsification criteria are recorded in the append-only
+candidate log. No reserved validation simulation, RCT Bench patient-level file
+or real trial outcome was accessed for this revision.

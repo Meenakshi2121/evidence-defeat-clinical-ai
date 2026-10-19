@@ -185,6 +185,9 @@ def construct_outer_fold(
         support.passes,
         multiplicity.passes,
         certainty.passes,
+        decision_uncertainty_essential=analysis_config["gate"]["uncertainty"][
+            "essential"
+        ],
     )
 
     fold_labels = np.full(len(heldout_covariates), fold_id, dtype=np.int16)
@@ -329,7 +332,12 @@ def run_cross_fitted_construction(
         interaction_effect=interaction_effect,
         doubly_robust_effect=doubly_robust_effect,
     )
-    gate = construct_gate(**check_arrays)
+    gate = construct_gate(
+        **check_arrays,
+        decision_uncertainty_essential=analysis_config["gate"]["uncertainty"][
+            "essential"
+        ],
+    )
     _validate_assembled_outputs(
         predictions,
         gate,

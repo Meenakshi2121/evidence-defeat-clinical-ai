@@ -8,12 +8,13 @@ allowed_analysis_override_paths:
   - "gate.record_adequacy.observed_fraction_minimum"
   - "gate.reference_support.pass_quantile"
   - "gate.multiplicity.minimum_estimators_supporting_primary_action"
+  - "gate.uncertainty.essential"
   - "learners.primary.interval_alpha_primary"
 
 candidates:
   C000:
     parent_id: null
-    status: "pre_run_committed"
+    status: "rejected"
     label: "Baseline four-check non-compensatory gate"
     rationale: "Establish the development-bank baseline before any adaptation."
     intended_change: "No change from the v0.1 four-check gate."
@@ -24,4 +25,21 @@ candidates:
       - "regret relative to default increases materially"
       - "group harms remain after evidence standardisation"
     analysis_overrides: {}
+    complexity_rank: 1
+
+  C001:
+    parent_id: "C000"
+    status: "pre_run_committed"
+    label: "Three-check Nyaya evidence-defeat gate"
+    rationale: "C000 showed that the binary certainty condition dominated acceptance and made the complete gate nearly identical to an uncertainty-only rule. C001 separates the Nyaya-inspired evidence-defeat architecture from its uncertainty comparator."
+    intended_change: "Retain record adequacy, reference support and model multiplicity as essential non-compensatory checks; continue computing decision uncertainty, but exclude it from the complete gate and retain uncertainty-only deferral as the external comparator at exact matched coverage."
+    expected_benefit: "Restore practically meaningful access to individualisation and test whether distinct evidence defects concentrate unsafe recommendations beyond uncertainty alone."
+    possible_failure_mode: "The three-check gate may increase coverage without reducing unsafe acceptance relative to uncertainty-only deferral, and model multiplicity may remain a weak discriminator."
+    falsification_metrics:
+      - "primary unsafe-acceptance contrast is non-negative"
+      - "regret relative to the default increases materially"
+      - "coverage gains are accompanied by unstable or harmful group differences"
+      - "model-multiplicity defect recovery remains weak"
+    analysis_overrides:
+      gate.uncertainty.essential: false
     complexity_rank: 1

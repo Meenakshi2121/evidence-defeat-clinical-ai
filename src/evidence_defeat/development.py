@@ -97,6 +97,7 @@ class CheckRecovery:
 class DevelopmentScientificResults:
     """Complete non-confirmatory metric profile for one development run."""
 
+    essential_checks: tuple[str, ...]
     primary_material_unsafe_acceptance_contrast: float
     methods: dict[str, dict[str, Any]]
     random_deferral: dict[str, float]
@@ -351,6 +352,7 @@ def execute_development_run(
         config_hashes,
     )
     results = DevelopmentScientificResults(
+        essential_checks=construction.gate.essential_checks,
         primary_material_unsafe_acceptance_contrast=(
             truth.primary_material_unsafe_acceptance_contrast
         ),
@@ -565,7 +567,9 @@ def _development_invariants(
     spec: DevelopmentRunSpec,
     hashes: dict[str, str],
 ) -> tuple[InvariantResult, ...]:
-    expected_gate = np.logical_and.reduce(list(construction.checks.values()))
+    expected_gate = np.logical_and.reduce(
+        [construction.checks[name] for name in construction.gate.essential_checks]
+    )
     methods = truth.metrics
     governance_metric = project.development_validation["phase_boundaries"][
         "independent_validation"
@@ -589,7 +593,7 @@ def _development_invariants(
             ),
         ),
         InvariantResult(
-            "complete_gate_is_logical_and",
+            "complete_gate_is_logical_and_of_essential_checks",
             bool(np.array_equal(expected_gate, construction.gate.complete)),
         ),
         InvariantResult(

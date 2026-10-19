@@ -25,6 +25,12 @@ def test_complete_gate_is_logical_and_and_ablations_are_named() -> None:
 
     result = construct_gate(record, support, multiplicity, uncertainty)
 
+    assert result.essential_checks == (
+        "record_adequacy",
+        "reference_support",
+        "model_multiplicity",
+        "decision_uncertainty",
+    )
     np.testing.assert_array_equal(result.complete, [True, False, False, False])
     np.testing.assert_array_equal(result.single_check["record_adequacy"], record)
     np.testing.assert_array_equal(
@@ -43,6 +49,45 @@ def test_complete_gate_is_logical_and_and_ablations_are_named() -> None:
         result.leave_one_out["without_decision_uncertainty"],
         [True, False, False, False],
     )
+
+
+def test_three_check_gate_retains_uncertainty_as_nonessential_diagnostic() -> None:
+    record = np.array([True, True, False, True])
+    support = np.array([True, False, True, True])
+    multiplicity = np.array([True, True, True, False])
+    uncertainty = np.array([False, True, True, True])
+
+    result = construct_gate(
+        record,
+        support,
+        multiplicity,
+        uncertainty,
+        decision_uncertainty_essential=False,
+    )
+
+    assert result.essential_checks == (
+        "record_adequacy",
+        "reference_support",
+        "model_multiplicity",
+    )
+    np.testing.assert_array_equal(result.complete, [True, False, False, False])
+    np.testing.assert_array_equal(
+        result.single_check["decision_uncertainty"], uncertainty
+    )
+    assert "without_decision_uncertainty" not in result.leave_one_out
+
+
+def test_gate_rejects_non_boolean_uncertainty_essential_flag() -> None:
+    checks = np.ones(2, dtype=bool)
+
+    with pytest.raises(TypeError, match="essential must be Boolean"):
+        construct_gate(
+            checks,
+            checks,
+            checks,
+            checks,
+            decision_uncertainty_essential=1,
+        )
 
 
 def test_gate_rejects_non_boolean_checks() -> None:

@@ -27,6 +27,7 @@ class GateSelections:
     """Complete, single-check and leave-one-check-out selections."""
 
     checks: Mapping[str, NDArray[np.bool_]]
+    essential_checks: tuple[str, ...]
     complete: NDArray[np.bool_]
     single_check: Mapping[str, NDArray[np.bool_]]
     leave_one_out: Mapping[str, NDArray[np.bool_]]
@@ -45,8 +46,19 @@ def construct_gate(
     reference_support: ArrayLike,
     model_multiplicity: ArrayLike,
     decision_uncertainty: ArrayLike,
+    *,
+    decision_uncertainty_essential: bool = True,
 ) -> GateSelections:
-    """Construct the logical-AND gate and its prespecified ablations."""
+    """Construct the logical-AND gate and candidate-specific ablations.
+
+    Decision uncertainty is always computed and remains available as a
+    diagnostic selector. Candidate C001 makes it non-essential so the complete
+    gate represents the three Nyaya-inspired evidence-defeat conditions while
+    uncertainty remains an external matched-coverage comparator.
+    """
+
+    if not isinstance(decision_uncertainty_essential, bool):
+        raise TypeError("decision_uncertainty_essential must be Boolean")
 
     raw = {
         "record_adequacy": record_adequacy,
@@ -59,16 +71,22 @@ def construct_gate(
     if len(sizes) != 1:
         raise ValueError("all checks must have the same number of rows")
 
-    complete = np.logical_and.reduce([checks[name] for name in CHECK_NAMES])
+    essential_checks = (
+        CHECK_NAMES
+        if decision_uncertainty_essential
+        else tuple(name for name in CHECK_NAMES if name != "decision_uncertainty")
+    )
+    complete = np.logical_and.reduce([checks[name] for name in essential_checks])
     single_check = {name: checks[name].copy() for name in CHECK_NAMES}
     leave_one_out = {
         f"without_{omitted}": np.logical_and.reduce(
-            [checks[name] for name in CHECK_NAMES if name != omitted]
+            [checks[name] for name in essential_checks if name != omitted]
         )
-        for omitted in CHECK_NAMES
+        for omitted in essential_checks
     }
     return GateSelections(
         checks=checks,
+        essential_checks=essential_checks,
         complete=complete,
         single_check=single_check,
         leave_one_out=leave_one_out,

@@ -16,27 +16,29 @@ prespecified set of real randomized trials.
 
 ## Central research question
 
-Does checking distinct evidence defects---record adequacy, reference support,
-model multiplicity and decision uncertainty---reduce materially unsafe accepted
-recommendations compared with uncertainty-only abstention at the same coverage,
-and how is the resulting burden of deferral distributed across groups?
+Does checking distinct evidence defects---record adequacy, reference support
+and model multiplicity---reduce materially unsafe accepted recommendations
+compared with uncertainty-only abstention at the same coverage, and how is the
+resulting burden of deferral distributed across groups?
 
 ## Planned gate
 
 For patient `i`:
 
 ```text
-G_i = D_i AND O_i AND M_i AND U_i
+G_i = D_i AND O_i AND M_i
 ```
 
 - `D`: essential record information is adequate;
 - `O`: the patient lies within supported covariate/overlap regions;
 - `M`: prespecified credible models agree on the recommended action;
-- `U`: uncertainty does not cross a prespecified clinical indifference margin.
 
-Every check is essential. Strength in one check cannot compensate for failure
-of another. The individualised action is used when the gate passes; otherwise
-the system defers to a prespecified population policy or human review.
+Every gate check is essential. Strength in one check cannot compensate for
+failure of another. The individualised action is used when the gate passes;
+otherwise the system defers to a prespecified population policy or human
+review. Decision uncertainty remains computed and reported, but it is tested
+as the external matched-coverage comparator rather than duplicated inside the
+current gate.
 
 ## What is novel
 
@@ -64,11 +66,14 @@ does not replace causal inference, statistical validation or clinical evidence.
 ## Current status
 
 Stage A software diagnostics and Stage B computational feasibility checks have
-passed; neither stage exposed scientific performance. The dedicated Stage C
-development bank and baseline candidate `C000` are now specified. Stage C is
-explicitly exploratory and unblinded, while the independent validation bank
-and proposed multitrial data remain unopened. The final candidate must still be
-reviewed, frozen and registered before validation begins.
+passed; neither stage exposed scientific performance. Baseline candidate
+`C000` then completed 60 exploratory Stage C screening runs. Its four-check
+gate was rejected as a final architecture because the decision-certainty check
+collapsed coverage. Results-informed child candidate `C001` is now specified
+before execution as the three-check gate above. Stage C remains exploratory
+and unblinded, while the independent validation bank and proposed multitrial
+data remain unopened. The final candidate must still be reviewed, frozen and
+registered before validation begins.
 
 The dated development/validation boundary is defined in
 `protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
@@ -133,8 +138,8 @@ clean, committed worktree. Inspect the plan before starting the baseline:
 
 ```bash
 poetry install
-poetry run evidence-defeat-dev plan --candidate C000 --tier screening
-poetry run evidence-defeat-dev batch --candidate C000 --tier screening
+poetry run evidence-defeat-dev plan --candidate C001 --tier screening
+poetry run evidence-defeat-dev batch --candidate C001 --tier screening
 ```
 
 The batch is resumable and writes ignored outputs under

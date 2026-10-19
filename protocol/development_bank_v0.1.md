@@ -15,7 +15,7 @@ uses a separate `dev_v0_1__` scenario prefix and replicate identifiers of
 200000 or greater. The reserved validation grid, RCT Bench patient-level data
 and real trial outcomes remain prohibited throughout Stage C.
 
-## Non-compensatory gate
+## Baseline non-compensatory gate
 
 For participant `i`, the candidate gate is
 
@@ -80,3 +80,22 @@ weighted composite or threshold search over a result already observed.
 Any revision becomes a new child candidate with its exact change, expected
 benefit, possible failure mode and falsification metrics committed before it is
 run. Rejected candidates and adverse results remain in the history.
+
+## Results-informed candidate C001
+
+After C000 screening was unblinded, its decision-certainty condition was found
+to dominate acceptance and reduce complete-gate coverage to 0.38%--5.50%
+across the six screening scenarios. C001 is therefore a transparently
+results-informed child candidate. It changes only which computed checks are
+essential:
+
+```text
+G_i(C001) = D_i * O_i * M_i.
+```
+
+Decision certainty (`U`) remains computed and reported, and uncertainty-only
+deferral remains the primary external comparator at exactly matched coverage.
+The thresholds, learners, scenarios, estimands, population default and fairness
+audit are unchanged. C001 is development, not independent validation; its
+pre-run specification and the complete C000 adverse result are retained in
+`protocol/development_candidate_log_v0.2.md`.

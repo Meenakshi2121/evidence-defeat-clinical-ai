@@ -256,3 +256,27 @@ details were fixed on 14 October 2026:
 The outer-heldout outcome is not supplied to candidate fitting, retention or
 coverage matching. It enters only the later policy-evaluation score after all
 actions have been fixed.
+
+## 14. Results-informed separation of evidence defeat from uncertainty
+
+C000 screening exposed an architectural redundancy: the binary decision-
+certainty condition failed for 94.08% of clean-control rows and at still higher
+rates in the defect scenarios. Complete-gate coverage fell to 0.38%--5.50%, so
+the framework was nearly a default-only policy and could not be distinguished
+meaningfully from its uncertainty-only comparator.
+
+Candidate C001 therefore keeps record adequacy, reference support and model
+multiplicity as the essential non-compensatory conditions, but makes decision
+uncertainty non-essential:
+
+```text
+G_i(C001) = D_i * O_i * M_i.
+```
+
+`U_i` is still calculated for diagnostic reporting. The uncertainty-only
+method continues to rank rows by the prespecified continuous certainty score
+and is matched exactly to C001 coverage within each outer fold. This is the
+only C001 analysis change; learner specifications, thresholds, default policy,
+estimands, scenarios and fairness procedures remain fixed. The decision is
+explicitly results-informed Stage C development and supplies no confirmatory
+evidence for C001.

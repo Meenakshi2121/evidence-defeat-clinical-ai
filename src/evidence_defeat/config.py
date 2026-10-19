@@ -97,6 +97,10 @@ def validate_project_config(config: ProjectConfig) -> None:
         raise ConfigurationError("The primary gate must use logical AND")
     if _require(analysis, "gate", "weighted_compensation") is not False:
         raise ConfigurationError("Weighted compensation must remain disabled")
+    if _require(analysis, "gate", "uncertainty", "essential") is not True:
+        raise ConfigurationError(
+            "The locked baseline must retain decision uncertainty as essential"
+        )
     if (
         _require(analysis, "comparators", "uncertainty_only", "matched_coverage")
         is not True
@@ -768,6 +772,7 @@ def validate_development_config(
         "gate.record_adequacy.observed_fraction_minimum",
         "gate.reference_support.pass_quantile",
         "gate.multiplicity.minimum_estimators_supporting_primary_action",
+        "gate.uncertainty.essential",
         "learners.primary.interval_alpha_primary",
     }
     if set(allowed_paths) != expected_paths:
@@ -908,6 +913,7 @@ def _validate_candidate_analysis_values(analysis: dict[str, Any]) -> None:
         "minimum_estimators_supporting_primary_action",
     )
     alpha = _require(analysis, "learners", "primary", "interval_alpha_primary")
+    uncertainty_essential = _require(analysis, "gate", "uncertainty", "essential")
     if not 0.0 <= float(observed) <= 1.0:
         raise ConfigurationError("Record threshold must lie in [0, 1]")
     if not 0.0 < float(support) < 1.0:
@@ -920,6 +926,8 @@ def _validate_candidate_analysis_values(analysis: dict[str, Any]) -> None:
         raise ConfigurationError("Multiplicity support count must be 1, 2, or 3")
     if not 0.0 < float(alpha) < 1.0:
         raise ConfigurationError("Interval alpha must lie inside (0, 1)")
+    if not isinstance(uncertainty_essential, bool):
+        raise ConfigurationError("Uncertainty essential flag must be Boolean")
 
 
 def _set_nested_value(mapping: dict[str, Any], path: str, value: Any) -> None:
