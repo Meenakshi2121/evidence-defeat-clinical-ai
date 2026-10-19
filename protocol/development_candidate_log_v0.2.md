@@ -1,6 +1,6 @@
 # Development candidate log v0.2
 
-**Status:** C000 result recorded; C001 committed before execution
+**Status:** C000 and C001 screening results recorded; C001 retained for fairness stress
 
 **Date opened:** 14 October 2026
 
@@ -18,7 +18,7 @@ candidates remain visible.
 | Candidate ID | Parent ID | Status | Pre-run commit | Configuration hash | Development-bank version | Decision |
 | --- | --- | --- | --- | --- | --- | --- |
 | C000 | — | Screening complete | `stage-c-c000-pre-run-v0.1`; `be9d331e1a5e4654623fc77f7a670f9ef1e6b167` in the manifest | Captured in the manifest below | v0.1 | Revise; four-check architecture not retained |
-| C001 | C000 | Pre-run committed | `stage-c-c001-pre-run-v0.1`; exact SHA to be captured by the plan and manifest | Captured by the plan and manifest | v0.1 | Pending run |
+| C001 | C000 | Screening complete; retained for fairness stress | `stage-c-c001-pre-run-v0.1`; `562f02cd30ed10dd5b9b070e53b42dd3b97b4179` in the manifest | Captured in the manifest below | v0.1 | Retain for fairness stress; not a finalist |
 
 The pre-run Git hash cannot be written self-referentially into the commit it
 identifies. The annotated tag names that clean commit; the machine-generated
@@ -136,7 +136,77 @@ any result is exposed.
 
 **Post-run record**
 
-- Not yet available. Append results here; do not rewrite the pre-run record.
+- Run manifest and development-bank version: 60 of 60 screening units completed
+  under development bank v0.1 at commit
+  `562f02cd30ed10dd5b9b070e53b42dd3b97b4179`; output
+  `results/development/stage-c/C001/c001-screening-v0.1/manifest.json`.
+  Every report identified C001 and the frozen pre-run commit. The archived
+  output SHA-256 is
+  `d592d018e2dffb8496acb23717cc0aecfeb4ae3abd754ae183c7fe04042a4244`.
+- Material unsafe acceptance at matched coverage: across all 60 screening
+  runs, the complete-gate minus uncertainty-only contrast was -0.013000 (95%
+  confidence interval -0.019128 to -0.006872). The clean-control scenario is
+  a negative control rather than part of the planned primary defect grid. In
+  the 50 defect-scenario runs alone, the contrast was -0.013640 (95%
+  confidence interval -0.020534 to -0.006746). All six scenario means favoured
+  C001, ranging from -0.0356 for record inadequacy to -0.0034 for combined
+  defects, although only the record-adequacy and reference-support
+  scenario-specific intervals excluded zero with ten replicates each.
+- Coverage: mean complete-gate coverage was 55.26% overall and ranged from
+  46.36% to 61.58% by scenario, compared with 0.38% to 5.50% for C000. Exact
+  matched coverage with the uncertainty-only comparator was preserved in
+  every run.
+- Deployed policy utility: averaged across all 60 runs, C001 utility exceeded
+  uncertainty-only deferral by 0.000535 (95% confidence interval 0.000203 to
+  0.000866), matched random deferral by 0.000746 (0.000392 to 0.001100), and
+  the population default by 0.002462 (0.001670 to 0.003254). It was 0.000666
+  lower than ungated individualisation (-0.001012 to -0.000320), showing the
+  expected small utility cost of safety-selective deferral.
+- Oracle regret and regret relative to default: C001 reduced oracle regret
+  relative to uncertainty-only deferral by 0.000535 and relative to the
+  population default by 0.002462 across all runs. Mean regret relative to the
+  default was negative in every scenario, ranging from -0.004104 to -0.001327;
+  no scenario showed mean harm relative to the default.
+- Raw group differences: across all runs, the mean raw coverage gap (group 1
+  minus group 0) was -0.02300 (95% confidence interval -0.04465 to -0.00135),
+  whereas the mean material-unsafe-acceptance gap was 0.00104 (-0.01384 to
+  0.01592). The mean absolute coverage gap was 0.06780 and its maximum was
+  0.21576. These screening runs had approximately 100 group-1 observations
+  each and equal defect allocation, so these results identify a fairness
+  question but do not resolve it.
+- Evidence-standardised group differences: standardisation was eligible in
+  19 of 60 runs and met the prespecified balance criterion in only 1 of 60.
+  Evidence-standardised gaps are therefore not interpreted. The dedicated
+  n=2,000 group-concentrated fairness tier is required before any fairness
+  conclusion.
+- Scenario and seed stability: the primary contrast favoured C001 in every
+  scenario and the gate improved utility over the default in every scenario.
+  Record adequacy recovered its generated defect with sensitivity and
+  specificity of 1.000. Reference support had mean sensitivity 0.9774 and
+  specificity 0.9905. Model multiplicity remained weak against its generated
+  defect label (sensitivity 0.3857; specificity 0.6158), an adverse result that
+  must remain visible. Despite that label-recovery limitation, the complete
+  gate's accepted-actionable error rate was 0.0193 lower than matched
+  uncertainty-only deferral across all runs (95% confidence interval -0.0348
+  to -0.0039).
+- Software or invariant failures: none; all required invariants passed in all
+  60 runs, and the manifest and independently uploaded summary agreed with the
+  archived copies.
+- Interpretation, including adverse findings: C001 restored meaningful access
+  and showed a favourable exploratory safety-utility profile against both
+  uncertainty-only and random deferral. This is development evidence, not
+  independent validation. Weak recovery of the generated multiplicity defect
+  and failure of most evidence-standardisation fits prevent finalist status
+  or a fairness claim. The next prespecified tier must test whether safety and
+  access remain acceptable when record and support defects are concentrated
+  by audited group.
+- Decision: retain C001 for the fairness-stress tier only. Do not designate it
+  a finalist, freeze it, access reserved validation data, or describe the
+  screening result as proof. Promotion beyond fairness stress requires a new
+  append-only review of the complete safety, utility, access and fairness
+  profile, including the adverse multiplicity result.
+- Reviewer initials and date: provisional study-author decision, 19 October
+  2026; supervisor and statistical review pending.
 
 ## Required entry for each candidate
 

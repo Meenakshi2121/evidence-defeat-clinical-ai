@@ -29,7 +29,7 @@ candidates:
 
   C001:
     parent_id: "C000"
-    status: "pre_run_committed"
+    status: "retained"
     label: "Three-check Nyaya evidence-defeat gate"
     rationale: "C000 showed that the binary certainty condition dominated acceptance and made the complete gate nearly identical to an uncertainty-only rule. C001 separates the Nyaya-inspired evidence-defeat architecture from its uncertainty comparator."
     intended_change: "Retain record adequacy, reference support and model multiplicity as essential non-compensatory checks; continue computing decision uncertainty, but exclude it from the complete gate and retain uncertainty-only deferral as the external comparator at exact matched coverage."

@@ -69,11 +69,14 @@ Stage A software diagnostics and Stage B computational feasibility checks have
 passed; neither stage exposed scientific performance. Baseline candidate
 `C000` then completed 60 exploratory Stage C screening runs. Its four-check
 gate was rejected as a final architecture because the decision-certainty check
-collapsed coverage. Results-informed child candidate `C001` is now specified
-before execution as the three-check gate above. Stage C remains exploratory
-and unblinded, while the independent validation bank and proposed multitrial
-data remain unopened. The final candidate must still be reviewed, frozen and
-registered before validation begins.
+collapsed coverage. Results-informed child candidate `C001` subsequently
+completed all 60 three-check screening runs and was retained for the dedicated
+fairness-stress tier. This is a tier-promotion decision, not finalist status or
+validation: model-multiplicity recovery and the screening fairness audit remain
+unresolved. Stage C remains exploratory and unblinded, while the independent
+validation bank and proposed multitrial data remain unopened. The final
+candidate must still be reviewed, frozen and registered before validation
+begins.
 
 The dated development/validation boundary is defined in
 `protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
@@ -134,12 +137,13 @@ invariant statuses and reproducibility fingerprints only.
 ## Transparent Stage C development
 
 Stage C runs expose scientific simulation results and therefore require a
-clean, committed worktree. Inspect the plan before starting the baseline:
+clean, committed worktree. With the C001 screening decision committed, inspect
+the plan before starting its authorised fairness-stress tier:
 
 ```bash
 poetry install
-poetry run evidence-defeat-dev plan --candidate C001 --tier screening
-poetry run evidence-defeat-dev batch --candidate C001 --tier screening
+poetry run evidence-defeat-dev plan --candidate C001 --tier fairness_stress
+poetry run evidence-defeat-dev batch --candidate C001 --tier fairness_stress
 ```
 
 The batch is resumable and writes ignored outputs under
