@@ -70,13 +70,20 @@ passed; neither stage exposed scientific performance. Baseline candidate
 `C000` then completed 60 exploratory Stage C screening runs. Its four-check
 gate was rejected as a final architecture because the decision-certainty check
 collapsed coverage. Results-informed child candidate `C001` subsequently
-completed all 60 three-check screening runs and was retained for the dedicated
-fairness-stress tier. This is a tier-promotion decision, not finalist status or
-validation: model-multiplicity recovery and the screening fairness audit remain
-unresolved. Stage C remains exploratory and unblinded, while the independent
-validation bank and proposed multitrial data remain unopened. The final
-candidate must still be reviewed, frozen and registered before validation
-begins.
+completed all 60 three-check screening runs and all 30 dedicated fairness-
+stress runs. At exactly matched coverage, its primary unsafe-acceptance
+contrast favoured C001 in both tiers. The fairness stress also exposed the
+intended safety--access trade-off: the group with concentrated evidence defects
+was deferred more often, while its raw unsafe-acceptance disadvantage under
+uncertainty-only deferral was reduced. C001 is therefore promoted unchanged to
+the prespecified finalist-robustness tier. This is finalist status, not a
+development freeze, fairness guarantee or validation claim. Weak multiplicity-
+defect recovery, incomplete evidence-standardisation balance and residual
+standardised safety gaps remain adverse findings. Stage C remains exploratory
+and unblinded, while the independent validation bank and proposed multitrial
+data remain unopened. The final candidate must still pass robustness review,
+be frozen, receive supervisor and statistical review, and be registered before
+validation begins.
 
 The dated development/validation boundary is defined in
 `protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
@@ -137,13 +144,13 @@ invariant statuses and reproducibility fingerprints only.
 ## Transparent Stage C development
 
 Stage C runs expose scientific simulation results and therefore require a
-clean, committed worktree. With the C001 screening decision committed, inspect
-the plan before starting its authorised fairness-stress tier:
+clean, committed worktree. With the C001 fairness-stress decision committed,
+inspect the plan before starting its authorised finalist-robustness tier:
 
 ```bash
 poetry install
-poetry run evidence-defeat-dev plan --candidate C001 --tier fairness_stress
-poetry run evidence-defeat-dev batch --candidate C001 --tier fairness_stress
+poetry run evidence-defeat-dev plan --candidate C001 --tier finalist_robustness
+poetry run evidence-defeat-dev batch --candidate C001 --tier finalist_robustness
 ```
 
 The batch is resumable and writes ignored outputs under

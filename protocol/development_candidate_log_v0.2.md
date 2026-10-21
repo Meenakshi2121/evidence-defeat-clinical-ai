@@ -1,6 +1,6 @@
 # Development candidate log v0.2
 
-**Status:** C000 and C001 screening results recorded; C001 retained for fairness stress
+**Status:** C000 and C001 development results recorded; C001 promoted to finalist robustness
 
 **Date opened:** 14 October 2026
 
@@ -18,7 +18,7 @@ candidates remain visible.
 | Candidate ID | Parent ID | Status | Pre-run commit | Configuration hash | Development-bank version | Decision |
 | --- | --- | --- | --- | --- | --- | --- |
 | C000 | — | Screening complete | `stage-c-c000-pre-run-v0.1`; `be9d331e1a5e4654623fc77f7a670f9ef1e6b167` in the manifest | Captured in the manifest below | v0.1 | Revise; four-check architecture not retained |
-| C001 | C000 | Screening complete; retained for fairness stress | `stage-c-c001-pre-run-v0.1`; `562f02cd30ed10dd5b9b070e53b42dd3b97b4179` in the manifest | Captured in the manifest below | v0.1 | Retain for fairness stress; not a finalist |
+| C001 | C000 | Screening and fairness stress complete; finalist | `stage-c-c001-pre-run-v0.1`; `562f02cd30ed10dd5b9b070e53b42dd3b97b4179`; fairness stress: `stage-c-c001-fairness-pre-run-v0.1`, commit `564cb6c6f8d9d2b5d94ca5213a9f7233cdc96859` | Captured in the manifests below | v0.1 | Promote unchanged to finalist robustness; not frozen or validated |
 
 The pre-run Git hash cannot be written self-referentially into the commit it
 identifies. The annotated tag names that clean commit; the machine-generated
@@ -205,6 +205,88 @@ any result is exposed.
   screening result as proof. Promotion beyond fairness stress requires a new
   append-only review of the complete safety, utility, access and fairness
   profile, including the adverse multiplicity result.
+- Reviewer initials and date: provisional study-author decision, 19 October
+  2026; supervisor and statistical review pending.
+
+**Fairness-stress post-run record**
+
+- Run manifest and development-bank version: 30 of 30 fairness-stress units
+  completed under development bank v0.1 at clean pre-run commit
+  `564cb6c6f8d9d2b5d94ca5213a9f7233cdc96859`; output
+  `results/development/stage-c/C001/c001-fairness-stress-v0.1/manifest.json`.
+  Every run identified candidate C001, used the fairness-stress namespace and
+  remained ineligible for confirmatory evidence. The archived output SHA-256
+  is `bcddcc1d3536a2554597b422f29b67f4191ad7026ba526de7a42a356faf2576d`.
+- Material unsafe acceptance at matched coverage: across all 30 runs, the
+  complete-gate minus uncertainty-only contrast was -0.015033 (95% confidence
+  interval -0.019802 to -0.010265). All six scenario means favoured C001,
+  ranging from -0.0300 to -0.0088; four scenario-specific intervals excluded
+  zero. Exact matched coverage was preserved in every run.
+- Coverage: mean complete-gate coverage was 53.37% overall and ranged from
+  47.97% to 60.58% by scenario. This restored meaningful access while leaving
+  46.63% of recommendations on the population default or human-review path.
+- Deployed policy utility: C001 exceeded uncertainty-only deferral by 0.000506
+  (95% confidence interval 0.000145 to 0.000866), matched random deferral by
+  0.001327 (0.000833 to 0.001821), and the population default by 0.004430
+  (0.003301 to 0.005559). It was 0.001448 lower than ungated
+  individualisation (-0.001991 to -0.000904), retaining the expected small
+  utility cost of safety-selective deferral.
+- Oracle regret and regret relative to default: relative to uncertainty-only
+  deferral, C001 reduced oracle regret by 0.000506. Mean regret relative to the
+  default was -0.004430 (95% confidence interval -0.005559 to -0.003301), so
+  the gate improved utility over the default on average in this development
+  tier.
+- Raw group differences: the audited group had lower access to
+  individualisation under C001. The mean coverage gap (group 1 minus group 0)
+  was -0.129562 (95% confidence interval -0.170335 to -0.088789). The raw
+  material-unsafe-acceptance gap was -0.004663 (-0.018518 to 0.009192),
+  compared with 0.037583 (0.021189 to 0.053977) under uncertainty-only
+  deferral. Within group 1, C001 reduced material unsafe acceptance relative
+  to uncertainty-only deferral by 0.044718 (0.031637 to 0.057798 in absolute
+  reduction). The result is therefore a safety--access trade-off: C001
+  directed more deferral toward the group with concentrated evidence defects
+  and removed the clear raw safety disadvantage seen under the comparator.
+- Evidence-standardised group differences: estimation was eligible in all 30
+  runs but met the prespecified balance criterion in only 15, comprising all
+  runs with 50% group prevalence and none with 20% prevalence. Among those 15
+  balanced runs, the standardised coverage gap was -0.006593 (95% confidence
+  interval -0.013012 to -0.000174), the material-unsafe-acceptance gap was
+  0.022933 (0.002185 to 0.043682), the utility gap was 0.000104 (-0.003602 to
+  0.003811), and the oracle-regret gap was 0.001639 (0.000031 to 0.003246).
+  The standardised unsafe-gap difference between C001 and uncertainty-only
+  deferral was 0.003450 (-0.006913 to 0.013814). These diagnostics do not show
+  clear comparative worsening, but the residual within-C001 gap and failed
+  balance at 20% prevalence prohibit a fairness guarantee.
+- Scenario and seed stability: the primary contrast favoured C001 in every
+  scenario. Record adequacy recovered its generated defect with pooled
+  sensitivity and specificity of 1.000. Reference support had sensitivity
+  0.8737 and specificity 0.9853. Model multiplicity remained weak against its
+  generated label (sensitivity 0.3739; specificity 0.6234). Decision
+  uncertainty, retained only as a comparator, had sensitivity 0.9803 but
+  specificity 0.0233. In ablations, removing record adequacy, reference
+  support or model multiplicity increased material unsafe acceptance by
+  0.030217, 0.008100 and 0.116567, respectively. The multiplicity check is
+  therefore safety-relevant despite its weak defect-label recovery.
+- Software or invariant failures: none. All 30 reports passed, all 240
+  invariant evaluations passed, every worktree was clean at run start, the
+  separately uploaded summary matched the archived summary byte for byte, and
+  the archive passed integrity verification.
+- Interpretation, including adverse findings: C001 met the prespecified
+  development safety-support rule at exactly matched coverage and produced a
+  small utility advantage over uncertainty-only and random deferral. It also
+  showed why equal deferral is not automatically fair when evidence defects
+  are group-concentrated: additional deferral reduced the exposed group's raw
+  safety disadvantage. This remains exploratory development evidence. The
+  access gap, residual standardised safety gap, failed standardisation balance
+  at 20% group prevalence and weak multiplicity-label recovery must remain
+  visible and prohibit claims of proven fairness, deployment readiness or
+  independent validation.
+- Decision: promote C001 unchanged to the prespecified finalist-robustness
+  tier. Do not tune thresholds or checks against these observed results. C001
+  is a finalist, not the frozen final candidate; reserved validation and RCT
+  Bench patient-level data remain unopened. Development freeze requires the
+  complete robustness profile, written selection rationale, supervisor and
+  statistical review, and registration.
 - Reviewer initials and date: provisional study-author decision, 19 October
   2026; supervisor and statistical review pending.
 
