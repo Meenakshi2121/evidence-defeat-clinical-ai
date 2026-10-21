@@ -1,6 +1,6 @@
 # Development candidate log v0.2
 
-**Status:** C000 and C001 development results recorded; C001 requires revision and is not frozen
+**Status:** C000 and C001 results recorded; C002 specified pre-run
 
 **Date opened:** 14 October 2026
 
@@ -19,6 +19,7 @@ candidates remain visible.
 | --- | --- | --- | --- | --- | --- | --- |
 | C000 | — | Screening complete | `stage-c-c000-pre-run-v0.1`; `be9d331e1a5e4654623fc77f7a670f9ef1e6b167` in the manifest | Captured in the manifest below | v0.1 | Revise; four-check architecture not retained |
 | C001 | C000 | Development complete; rejected as final architecture | Screening: `stage-c-c001-pre-run-v0.1`, commit `562f02cd30ed10dd5b9b070e53b42dd3b97b4179`; fairness stress: `stage-c-c001-fairness-pre-run-v0.1`, commit `564cb6c6f8d9d2b5d94ca5213a9f7233cdc96859`; robustness: `stage-c-c001-robustness-pre-run-v0.1`, commit `40d654241480f0f612218c15d79efae563cdbddf` | Captured in the manifests below | v0.1 | Revise through a prospectively specified child; do not freeze or validate C001 |
+| C002 | C001 | Pre-run committed; revision screening only | To be named by `stage-c-c002-pre-run-v0.1` after implementation review | To be captured by the pre-run plan | v0.1 fresh revision namespace | Run only the authorised fresh revision-screening tier after clean commit and tag |
 
 The pre-run Git hash cannot be written self-referentially into the commit it
 identifies. The annotated tag names that clean commit; the machine-generated
@@ -375,6 +376,75 @@ any result is exposed.
   patient-level data remain unopened.
 - Reviewer initials and date: provisional study-author decision, 21 October
   2026; supervisor and statistical review pending.
+
+### Candidate `C002`
+
+**Pre-run record**
+
+- Parent candidate: C001.
+- Date and author: 21 October 2026; study author.
+- Scientific or engineering rationale: C001's evidence-defeat checks improved
+  safety in the 20 robustness runs containing generated evidence defects, but
+  uncertainty-only deferral was superior in the five no-defect runs. The
+  aggregate 25-run interval crossed zero. This pattern supports a hierarchy in
+  which distinct evidence defects remain non-compensatory while continuous
+  uncertainty filters the recommendations that survive those checks.
+- Exact intended change: define evidence qualification as
+  `H_i = D_i * O_i * M_i`. Compute the unchanged uncertainty score
+  `S_i = (abs(tau_hat_i) - delta) / SE_hat_i`. Within each held-out outer fold,
+  define `U_i(0.80)` as membership in the highest-ranked 80% of `S_i`, with
+  the locked SHA-256 tie rule. Final acceptance is
+  `G_i(C002) = H_i * U_i(0.80)`. The uncertainty-only comparator selects the
+  highest `S_i` values from the whole held-out fold to exactly match C002's
+  final acceptance count. No failed `D`, `O` or `M` check can be compensated
+  by uncertainty.
+- Results-informed status of the change: both the hierarchical design and the
+  0.80 retention fraction were chosen after reviewing C001. They are therefore
+  exploratory Stage C development choices and cannot be validated using any
+  C000 or C001 result. The fraction is fixed before a C002 run and will not be
+  tuned on the new results.
+- Unchanged components: causal learners, evidence-check definitions and
+  thresholds, materiality margins, outcome orientation, cross-fitting,
+  population default, evaluation estimands, exact matched-coverage comparator,
+  random comparator and fairness audit.
+- Expected benefit: retain C001's defect-present safety advantage while
+  removing its weakest uncertainty-ranked recommendations, especially in
+  evidence-clean or absent-heterogeneity settings. Unlike C000's strict
+  confidence-interval rule, the rank filter preserves a known proportion of
+  held-out access before intersection with the evidence checks.
+- Possible failure mode: C002 may still be inferior to uncertainty-only
+  deferral when no evidence defect exists, may lose C001's defect-present
+  advantage, may reduce coverage below a useful level, or may increase group
+  access or safety disparities.
+- Metrics that could falsify the rationale: a non-negative pooled
+  defect-present unsafe-acceptance contrast against matched uncertainty-only
+  deferral; a no-defect disadvantage greater than 0.005; mean coverage below
+  0.25 in any primary revision-screening scenario; material utility loss
+  relative to the population default; unstable seed or scenario results; or
+  harmful group-specific results that aggregate performance conceals.
+- Fresh development data: C002 is authorised only for 35 revision-screening
+  runs comprising seven scenarios, five replicates per scenario, `n=1,000`,
+  scenario identifiers beginning `dev_v0_1__revision_` and replicate
+  identifiers 230000--230004. These include clean control, absent
+  heterogeneity, four single-defect mechanisms and combined defects. C000 and
+  C001 replicate identifiers are not reused.
+- Later tiers: fresh fairness-stress and robustness grids are specified with
+  replicate namespaces 240000--240004 and 250000--250004, but they are not
+  authorised for C002. Opening either requires an append-only post-screening
+  decision, a status change, a clean commit and a new pre-run tag.
+- Git commit: to be recorded by `evidence-defeat-dev plan` after the
+  implementation passes the full test suite; intended annotated tag
+  `stage-c-c002-pre-run-v0.1`.
+- Configuration hashes: to be recorded by the plan and each report for the
+  base analysis, simulation, governance, amended development bank, candidate
+  register, effective C002 analysis and their labelled combination.
+- Reserved validation simulation bank, RCT Bench patient-level data and real
+  trial outcomes accessed: no.
+- Independent review status: supervisor and statistical review pending.
+
+**Post-run record**
+
+- Not started. No C002 scientific result has been exposed.
 
 ## Required entry for each candidate
 

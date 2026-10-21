@@ -9,6 +9,7 @@ from evidence_defeat.selection import (
     apply_deferral_policy,
     construct_gate,
     deterministic_tie_keys,
+    graded_uncertainty_acceptance,
     match_coverage_within_folds,
     random_deferral_at_matched_coverage,
     select_exact_count,
@@ -32,6 +33,11 @@ def test_complete_gate_is_logical_and_and_ablations_are_named() -> None:
         "decision_uncertainty",
     )
     np.testing.assert_array_equal(result.complete, [True, False, False, False])
+    np.testing.assert_array_equal(
+        result.evidence_qualified,
+        [True, False, False, False],
+    )
+    assert result.graded_uncertainty_applied is False
     np.testing.assert_array_equal(result.single_check["record_adequacy"], record)
     np.testing.assert_array_equal(
         result.leave_one_out["without_record_adequacy"],
@@ -75,6 +81,61 @@ def test_three_check_gate_retains_uncertainty_as_nonessential_diagnostic() -> No
         result.single_check["decision_uncertainty"], uncertainty
     )
     assert "without_decision_uncertainty" not in result.leave_one_out
+
+
+def test_graded_uncertainty_filters_after_noncompensatory_evidence_checks() -> None:
+    record = np.array([True, True, True, False, True])
+    support = np.array([True, True, True, True, False])
+    multiplicity = np.array([True, True, False, True, True])
+    diagnostic_uncertainty = np.ones(5, dtype=bool)
+    graded = np.array([False, True, True, True, True])
+
+    result = construct_gate(
+        record,
+        support,
+        multiplicity,
+        diagnostic_uncertainty,
+        decision_uncertainty_essential=False,
+        graded_uncertainty_acceptance=graded,
+    )
+
+    np.testing.assert_array_equal(
+        result.evidence_qualified,
+        [True, True, False, False, False],
+    )
+    np.testing.assert_array_equal(result.complete, [False, True, False, False, False])
+    assert result.graded_uncertainty_applied is True
+    assert not np.any(result.complete & ~result.evidence_qualified)
+
+
+def test_graded_uncertainty_retains_exact_fraction_with_deterministic_ties() -> None:
+    selected = graded_uncertainty_acceptance(
+        effect=np.array([0.20, 0.10, 0.05, 0.00, -0.10]),
+        interval_lower=np.array([0.10, 0.00, -0.05, -0.10, -0.20]),
+        interval_upper=np.array([0.30, 0.20, 0.15, 0.10, 0.00]),
+        retention_fraction=0.80,
+        trial_ids="trial-a",
+        row_ids=np.arange(5),
+        master_seed=20261013,
+        materiality_margin=0.02,
+    )
+
+    assert selected.dtype == np.bool_
+    assert selected.sum() == 4
+
+
+def test_graded_uncertainty_rejects_invalid_retention_fraction() -> None:
+    with pytest.raises(ValueError, match="inside"):
+        graded_uncertainty_acceptance(
+            effect=[0.1, 0.2],
+            interval_lower=[0.0, 0.1],
+            interval_upper=[0.2, 0.3],
+            retention_fraction=0.0,
+            trial_ids="trial-a",
+            row_ids=[0, 1],
+            master_seed=20261013,
+            materiality_margin=0.02,
+        )
 
 
 def test_gate_rejects_non_boolean_uncertainty_essential_flag() -> None:

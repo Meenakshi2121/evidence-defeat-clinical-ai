@@ -67,6 +67,10 @@ def reduced_development_inputs() -> tuple[ProjectConfig, DevelopmentConfig]:
     scenario = bank["tiers"]["screening"]["scenarios"][0]
     scenario["sample_size"] = 180
     bank["tiers"]["screening"]["scenarios"] = [scenario]
+    bank["tiers"]["revision_screening"]["replicate_ids"] = [230000]
+    revision_scenario = bank["tiers"]["revision_screening"]["scenarios"][0]
+    revision_scenario["sample_size"] = 180
+    bank["tiers"]["revision_screening"]["scenarios"] = [revision_scenario]
     reduced_development = DevelopmentConfig(
         bank=bank,
         candidates=deepcopy(development.candidates),
@@ -188,6 +192,38 @@ def test_c001_uses_three_essential_checks_and_keeps_uncertainty_comparator(
     assert "uncertainty_only" in payload["results"]["methods"]
     assert "single_decision_uncertainty" in payload["results"]["methods"]
     assert "without_decision_uncertainty" not in payload["results"]["methods"]
+
+
+def test_c002_applies_graded_uncertainty_after_three_evidence_checks(
+    reduced_development_inputs: tuple[ProjectConfig, DevelopmentConfig],
+) -> None:
+    project, development = reduced_development_inputs
+    spec = plan_development_runs(
+        project,
+        development,
+        "C002",
+        tier="revision_screening",
+    )[0]
+
+    report = execute_development_run(
+        project,
+        development,
+        spec,
+        code_commit="a" * 40,
+        git_branch="protocol-v0.1",
+        repository_clean_at_start=True,
+    )
+    payload = report.to_dict()
+
+    assert report.passed
+    assert payload["results"]["essential_checks"] == [
+        "record_adequacy",
+        "reference_support",
+        "model_multiplicity",
+    ]
+    assert payload["results"]["graded_uncertainty_filter_enabled"] is True
+    assert payload["results"]["graded_uncertainty_retention_fraction"] == 0.80
+    assert "uncertainty_only" in payload["results"]["methods"]
 
 
 def test_dirty_repository_is_rejected_before_development_execution(

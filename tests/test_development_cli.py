@@ -18,6 +18,21 @@ def test_stage_c_cli_declares_plan_batch_run_and_summary_commands() -> None:
         assert command in parser.format_help()
 
 
+def test_stage_c_cli_accepts_the_fresh_revision_tiers() -> None:
+    arguments = build_parser().parse_args(
+        [
+            "plan",
+            "--candidate",
+            "C002",
+            "--tier",
+            "revision_screening",
+        ]
+    )
+
+    assert arguments.candidate == "C002"
+    assert arguments.tier == "revision_screening"
+
+
 def test_in_repository_output_must_remain_in_ignored_stage_c_tree(
     tmp_path: Path,
 ) -> None:

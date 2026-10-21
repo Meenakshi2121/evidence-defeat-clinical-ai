@@ -20,6 +20,7 @@ def test_project_configuration_is_valid() -> None:
 
     assert config.analysis["gate"]["combination"] == "logical_and"
     assert config.analysis["gate"]["uncertainty"]["essential"] is True
+    assert config.analysis["gate"]["uncertainty"]["graded_filter"]["enabled"] is False
     assert config.simulation["confirmatory_primary_safety_grid"]["scenario_count"] == 10
     assert config.poc["scientific_status"]["confirmatory_evidence"] is False
     assert config.poc["reporting"]["scientific_results_exposed"] is False
@@ -54,6 +55,15 @@ def test_locked_baseline_requires_uncertainty_as_essential() -> None:
     analysis["gate"]["uncertainty"]["essential"] = False
 
     with pytest.raises(ConfigurationError, match="baseline must retain"):
+        validate_project_config(replace(original, analysis=analysis))
+
+
+def test_locked_baseline_cannot_enable_the_graded_filter() -> None:
+    original = load_project_config(PROJECT_ROOT)
+    analysis = deepcopy(original.analysis)
+    analysis["gate"]["uncertainty"]["graded_filter"]["enabled"] = True
+
+    with pytest.raises(ConfigurationError, match="baseline cannot"):
         validate_project_config(replace(original, analysis=analysis))
 
 

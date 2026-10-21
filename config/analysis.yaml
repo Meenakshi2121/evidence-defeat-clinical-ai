@@ -173,6 +173,11 @@ gate:
     primary_interval_alpha: 0.05
     pass_rule: "interval_entirely_above_plus_delta_or_below_minus_delta"
     sensitivity_interval_alpha: 0.10
+    graded_filter:
+      enabled: false
+      retention_fraction: 1.00
+      ranking_population: "all_rows_within_outer_fold"
+      ranking_score: "(abs(effect)-delta)/standard_error"
 
 comparators:
   population_default: true

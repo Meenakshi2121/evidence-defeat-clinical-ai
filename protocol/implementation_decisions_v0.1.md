@@ -280,3 +280,47 @@ only C001 analysis change; learner specifications, thresholds, default policy,
 estimands, scenarios and fairness procedures remain fixed. The decision is
 explicitly results-informed Stage C development and supplies no confirmatory
 evidence for C001.
+
+## 15. Hierarchical graded uncertainty for C002
+
+C001 finalist robustness showed a boundary condition that the three-check
+architecture could not resolve alone. It was safer than uncertainty-only
+deferral in the pooled defect-present runs, but worse in the no-defect,
+absent-heterogeneity scenario. Candidate C002 is therefore explicitly
+results-informed and separates two questions:
+
+1. Is the recommendation's evidential basis defeated?
+2. If it is not defeated, how strong is the treatment-effect signal?
+
+The first question remains non-compensatory:
+
+```text
+H_i = D_i * O_i * M_i.
+```
+
+The second uses the existing continuous uncertainty ranking score:
+
+```text
+S_i = (abs(tau_hat_i) - delta) / SE_hat_i.
+```
+
+Within each held-out outer fold, `U_i(0.80)` selects the highest-ranked 80% of
+`S_i`; exact ties use the locked SHA-256 rule. C002 accepts individualisation
+only when both stages pass:
+
+```text
+G_i(C002) = H_i * U_i(0.80).
+```
+
+The ranking is computed without held-out outcomes. Its threshold is calibrated
+within the held-out fold by rank, not by inspecting policy performance. A high
+uncertainty score cannot rescue failed record adequacy, reference support or
+model multiplicity. The matched uncertainty-only comparator uses the same
+score but no evidence-defeat restriction and is reduced to C002's exact final
+coverage within each fold.
+
+The 0.80 fraction is a Stage C design choice made after C001 and is not a
+universal clinical constant. It is fixed before any C002 run, will not be
+tuned on C002 outcomes, and must be independently validated if C002 is later
+frozen. Fairness remains a separate safety-and-access audit; no group weight or
+weighted fairness score changes acceptance.

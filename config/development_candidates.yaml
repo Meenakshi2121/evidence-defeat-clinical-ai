@@ -9,6 +9,8 @@ allowed_analysis_override_paths:
   - "gate.reference_support.pass_quantile"
   - "gate.multiplicity.minimum_estimators_supporting_primary_action"
   - "gate.uncertainty.essential"
+  - "gate.uncertainty.graded_filter.enabled"
+  - "gate.uncertainty.graded_filter.retention_fraction"
   - "learners.primary.interval_alpha_primary"
 
 candidates:
@@ -25,6 +27,7 @@ candidates:
       - "regret relative to default increases materially"
       - "group harms remain after evidence standardisation"
     analysis_overrides: {}
+    authorised_tiers: ["screening"]
     complexity_rank: 1
 
   C001:
@@ -42,4 +45,29 @@ candidates:
       - "model-multiplicity defect recovery remains weak"
     analysis_overrides:
       gate.uncertainty.essential: false
+    authorised_tiers:
+      - "screening"
+      - "fairness_stress"
+      - "finalist_robustness"
     complexity_rank: 1
+
+  C002:
+    parent_id: "C001"
+    status: "pre_run_committed"
+    label: "Hierarchical evidence-defeat and graded-uncertainty gate"
+    rationale: "C001 improved safety when generated evidence defects were present but was inferior to uncertainty-only deferral in the no-defect scenario. C002 therefore preserves the non-compensatory Nyaya-inspired evidence-defeat conditions while adding a separate graded uncertainty filter that cannot rescue a failed evidence check."
+    intended_change: "First require record adequacy, reference support and model multiplicity. Then retain only rows in the highest 80 percent of the prespecified uncertainty ranking within each held-out fold. Continue comparing with uncertainty-only deferral at the exact final C002 coverage. No learner, evidence-check threshold, outcome, default policy, fairness rule or materiality margin changes."
+    expected_benefit: "Preserve C001's protection against distinct evidence defects while filtering weak recommendations in evidence-clean settings, without returning to C000's near-zero coverage caused by a strict confidence-interval pass rule."
+    possible_failure_mode: "The graded filter may reduce access without eliminating C001's no-defect disadvantage, or it may weaken the defect-present safety advantage and widen group access gaps."
+    falsification_metrics:
+      - "the pooled defect-present unsafe-acceptance contrast against matched uncertainty-only deferral is non-negative"
+      - "the no-defect unsafe-acceptance disadvantage exceeds 0.005"
+      - "mean coverage falls below 0.25 in any primary screening scenario"
+      - "deployed utility is materially worse than the population default"
+      - "safety gains are accompanied by unstable or harmful group differences"
+    analysis_overrides:
+      gate.uncertainty.essential: false
+      gate.uncertainty.graded_filter.enabled: true
+      gate.uncertainty.graded_filter.retention_fraction: 0.80
+    authorised_tiers: ["revision_screening"]
+    complexity_rank: 2

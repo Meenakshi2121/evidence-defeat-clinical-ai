@@ -26,19 +26,21 @@ resulting burden of deferral distributed across groups?
 For patient `i`:
 
 ```text
-G_i = D_i AND O_i AND M_i
+H_i = D_i AND O_i AND M_i
+G_i = H_i AND U_i(0.80)
 ```
 
 - `D`: essential record information is adequate;
 - `O`: the patient lies within supported covariate/overlap regions;
 - `M`: prespecified credible models agree on the recommended action;
 
-Every gate check is essential. Strength in one check cannot compensate for
-failure of another. The individualised action is used when the gate passes;
-otherwise the system defers to a prespecified population policy or human
-review. Decision uncertainty remains computed and reported, but it is tested
-as the external matched-coverage comparator rather than duplicated inside the
-current gate.
+Every evidence check is essential: uncertainty cannot rescue a failure of
+`D`, `O` or `M`. Among rows that remain eligible, `U(0.80)` retains those in
+the highest 80% of the prespecified continuous uncertainty ranking within each
+held-out fold. The individualised action is used only when the hierarchical
+gate passes; otherwise the system defers to a prespecified population policy
+or human review. An uncertainty-only policy remains the external comparator at
+the exact final coverage.
 
 ## What is novel
 
@@ -83,15 +85,19 @@ balance criterion in every robustness run, so standardised fairness gaps are
 not interpreted. The raw coverage gap also remained an adverse access signal.
 
 C001 is therefore not frozen as the final framework. It is recorded as a
-rejected final architecture and may serve only as the disclosed parent of a
-new, results-informed development candidate. The independent validation bank
-and proposed multitrial data remain unopened. Any child candidate must be
-specified and committed before execution, use fresh development runs, and
-complete the development, review and registration sequence before validation.
+rejected final architecture. Results-informed child candidate `C002` is now
+specified but has not been run. C002 combines C001's three non-compensatory
+evidence checks with a prespecified graded uncertainty filter retaining the
+highest-ranked 80% within each held-out fold. Only a fresh 35-run revision-
+screening tier is currently authorised. The independent validation bank and
+proposed multitrial data remain unopened. C002 must complete development,
+review and registration before validation.
 
 The dated development/validation boundary is defined in
 `protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
-the historical pre-amendment record.
+the historical pre-amendment record. C002's results-informed design and fresh
+development boundary are fixed in
+`protocol/c002_development_amendment_v0.3.md`.
 
 Earlier exploratory work using the International Stroke Trial informed the
 research question but will not be treated as independent validation. See
@@ -149,9 +155,18 @@ invariant statuses and reproducibility fingerprints only.
 
 Stage C runs expose scientific simulation results and therefore require a
 clean, committed worktree. C001 has completed its authorised development tiers
-and must not be rerun or tuned. The next executable development plan will be
-documented only after a child candidate has been specified, reviewed, committed
-and tagged before its results are exposed.
+and must not be rerun or tuned. After C002's implementation is committed and
+tagged, inspect its fresh screening plan before starting it:
+
+```bash
+poetry run evidence-defeat-dev plan \
+  --candidate C002 \
+  --tier revision_screening
+```
+
+Do not execute the batch until the plan identifies the intended clean commit,
+35 fresh runs, replicate identifiers 230000--230004 and only
+`dev_v0_1__revision_` scenarios.
 
 The batch is resumable and writes ignored outputs under
 `results/development/stage-c/`. Each report records the candidate, code commit,

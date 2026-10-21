@@ -35,6 +35,7 @@ from evidence_defeat.preprocessing import (
 from evidence_defeat.selection import (
     GateSelections,
     construct_gate,
+    graded_uncertainty_acceptance,
     uncertainty_only_at_matched_coverage,
 )
 
@@ -180,6 +181,24 @@ def construct_outer_fold(
         predictions.primary_interval_upper,
         materiality_margin=materiality_margin,
     )
+    graded_config = analysis_config["gate"]["uncertainty"]["graded_filter"]
+    graded_acceptance = (
+        graded_uncertainty_acceptance(
+            predictions.primary_effect,
+            predictions.primary_interval_lower,
+            predictions.primary_interval_upper,
+            retention_fraction=float(graded_config["retention_fraction"]),
+            trial_ids=trial_id,
+            row_ids=heldout_ids,
+            master_seed=int(analysis_config["master_seed"]),
+            materiality_margin=materiality_margin,
+            interval_alpha=float(
+                analysis_config["learners"]["primary"]["interval_alpha_primary"]
+            ),
+        )
+        if graded_config["enabled"]
+        else None
+    )
     gate = construct_gate(
         record.passes,
         support.passes,
@@ -188,6 +207,7 @@ def construct_outer_fold(
         decision_uncertainty_essential=analysis_config["gate"]["uncertainty"][
             "essential"
         ],
+        graded_uncertainty_acceptance=graded_acceptance,
     )
 
     fold_labels = np.full(len(heldout_covariates), fold_id, dtype=np.int16)
@@ -282,6 +302,7 @@ def run_cross_fitted_construction(
     }
     individualised_action = np.zeros(n, dtype=np.int8)
     uncertainty_only = np.zeros(n, dtype=bool)
+    graded_uncertainty = np.zeros(n, dtype=bool)
     observed_fraction = np.full(n, np.nan)
     invalid_present = np.zeros(n, dtype=bool)
     support_score = np.full(n, np.nan)
@@ -316,6 +337,7 @@ def run_cross_fitted_construction(
             check_arrays[name][heldout] = values
         individualised_action[heldout] = fold.individualised_action
         uncertainty_only[heldout] = fold.uncertainty_only_acceptance
+        graded_uncertainty[heldout] = fold.gate.graded_uncertainty_acceptance
         observed_fraction[heldout] = fold.record.observed_fraction
         invalid_present[heldout] = fold.record.invalid_present
         support_score[heldout] = fold.support.score
@@ -337,6 +359,11 @@ def run_cross_fitted_construction(
         decision_uncertainty_essential=analysis_config["gate"]["uncertainty"][
             "essential"
         ],
+        graded_uncertainty_acceptance=(
+            graded_uncertainty
+            if analysis_config["gate"]["uncertainty"]["graded_filter"]["enabled"]
+            else None
+        ),
     )
     _validate_assembled_outputs(
         predictions,

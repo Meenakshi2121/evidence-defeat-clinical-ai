@@ -57,7 +57,7 @@ def test_baseline_cannot_enter_later_tiers_before_retention() -> None:
     project = load_project_config(PROJECT_ROOT)
     development = load_development_config(PROJECT_ROOT, project=project)
 
-    with pytest.raises(ValueError, match="not eligible"):
+    with pytest.raises(ValueError, match="not authorised"):
         plan_development_runs(
             project,
             development,
@@ -112,6 +112,35 @@ def test_screening_run_can_be_selected_without_opening_later_tiers() -> None:
     assert selected == planned
 
 
+def test_c002_uses_only_fresh_revision_screening_runs() -> None:
+    project = load_project_config(PROJECT_ROOT)
+    development = load_development_config(PROJECT_ROOT, project=project)
+
+    planned = plan_development_runs(
+        project,
+        development,
+        "C002",
+        tier="revision_screening",
+    )
+
+    assert len(planned) == 35
+    assert {item.scenario.replicate_id for item in planned} == set(
+        range(230000, 230005)
+    )
+    assert all("revision_" in item.scenario.scenario_id for item in planned)
+    assert all(item.candidate_id == "C002" for item in planned)
+
+    with pytest.raises(ValueError, match="not authorised"):
+        plan_development_runs(project, development, "C002", tier="screening")
+    with pytest.raises(ValueError, match="not authorised"):
+        plan_development_runs(
+            project,
+            development,
+            "C002",
+            tier="revision_fairness_stress",
+        )
+
+
 def test_prohibited_candidate_override_is_rejected() -> None:
     project = load_project_config(PROJECT_ROOT)
     original = load_development_config(PROJECT_ROOT, project=project)
@@ -152,6 +181,21 @@ def test_c001_changes_only_uncertainty_essential_status() -> None:
     assert revised == baseline
 
 
+def test_c002_adds_only_prespecified_hierarchical_uncertainty() -> None:
+    project = load_project_config(PROJECT_ROOT)
+    development = load_development_config(PROJECT_ROOT, project=project)
+
+    c001 = candidate_analysis_config(project, development, "C001")
+    c002 = candidate_analysis_config(project, development, "C002")
+
+    assert c002["gate"]["uncertainty"]["essential"] is False
+    assert c002["gate"]["uncertainty"]["graded_filter"]["enabled"] is True
+    assert c002["gate"]["uncertainty"]["graded_filter"]["retention_fraction"] == 0.80
+    c002["gate"]["uncertainty"]["graded_filter"]["enabled"] = False
+    c002["gate"]["uncertainty"]["graded_filter"]["retention_fraction"] = 1.0
+    assert c002 == c001
+
+
 def test_non_boolean_uncertainty_essential_override_is_rejected() -> None:
     project = load_project_config(PROJECT_ROOT)
     original = load_development_config(PROJECT_ROOT, project=project)
@@ -161,6 +205,21 @@ def test_non_boolean_uncertainty_essential_override_is_rejected() -> None:
     }
 
     with pytest.raises(ConfigurationError, match="essential flag must be Boolean"):
+        validate_development_config(
+            project,
+            DevelopmentConfig(bank=deepcopy(original.bank), candidates=candidates),
+        )
+
+
+def test_invalid_graded_uncertainty_fraction_is_rejected() -> None:
+    project = load_project_config(PROJECT_ROOT)
+    original = load_development_config(PROJECT_ROOT, project=project)
+    candidates = deepcopy(original.candidates)
+    candidates["candidates"]["C002"]["analysis_overrides"][
+        "gate.uncertainty.graded_filter.retention_fraction"
+    ] = 0.0
+
+    with pytest.raises(ConfigurationError, match="Graded retention"):
         validate_development_config(
             project,
             DevelopmentConfig(bank=deepcopy(original.bank), candidates=candidates),

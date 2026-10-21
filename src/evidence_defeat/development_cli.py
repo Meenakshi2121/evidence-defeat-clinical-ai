@@ -84,7 +84,14 @@ def _common_candidate_tier_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--tier",
         default="screening",
-        choices=("screening", "fairness_stress", "finalist_robustness"),
+        choices=(
+            "screening",
+            "fairness_stress",
+            "finalist_robustness",
+            "revision_screening",
+            "revision_fairness_stress",
+            "revision_finalist_robustness",
+        ),
     )
 
 

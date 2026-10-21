@@ -28,6 +28,9 @@ class GateSelections:
 
     checks: Mapping[str, NDArray[np.bool_]]
     essential_checks: tuple[str, ...]
+    evidence_qualified: NDArray[np.bool_]
+    graded_uncertainty_applied: bool
+    graded_uncertainty_acceptance: NDArray[np.bool_]
     complete: NDArray[np.bool_]
     single_check: Mapping[str, NDArray[np.bool_]]
     leave_one_out: Mapping[str, NDArray[np.bool_]]
@@ -48,6 +51,7 @@ def construct_gate(
     decision_uncertainty: ArrayLike,
     *,
     decision_uncertainty_essential: bool = True,
+    graded_uncertainty_acceptance: ArrayLike | None = None,
 ) -> GateSelections:
     """Construct the logical-AND gate and candidate-specific ablations.
 
@@ -76,20 +80,85 @@ def construct_gate(
         if decision_uncertainty_essential
         else tuple(name for name in CHECK_NAMES if name != "decision_uncertainty")
     )
-    complete = np.logical_and.reduce([checks[name] for name in essential_checks])
+    evidence_qualified = np.logical_and.reduce(
+        [checks[name] for name in essential_checks]
+    )
+    if graded_uncertainty_acceptance is None:
+        graded_acceptance = np.ones(next(iter(sizes)), dtype=bool)
+        graded_applied = False
+    else:
+        graded_acceptance = _boolean_vector(
+            "graded_uncertainty_acceptance",
+            graded_uncertainty_acceptance,
+        )
+        if graded_acceptance.shape[0] != next(iter(sizes)):
+            raise ValueError(
+                "graded_uncertainty_acceptance must match the check row count"
+            )
+        graded_applied = True
+
+    complete = evidence_qualified & graded_acceptance
     single_check = {name: checks[name].copy() for name in CHECK_NAMES}
     leave_one_out = {
         f"without_{omitted}": np.logical_and.reduce(
             [checks[name] for name in essential_checks if name != omitted]
         )
+        & graded_acceptance
         for omitted in essential_checks
     }
     return GateSelections(
         checks=checks,
         essential_checks=essential_checks,
+        evidence_qualified=evidence_qualified,
+        graded_uncertainty_applied=graded_applied,
+        graded_uncertainty_acceptance=graded_acceptance,
         complete=complete,
         single_check=single_check,
         leave_one_out=leave_one_out,
+    )
+
+
+def graded_uncertainty_acceptance(
+    effect: ArrayLike,
+    interval_lower: ArrayLike,
+    interval_upper: ArrayLike,
+    *,
+    retention_fraction: float,
+    trial_ids: ArrayLike | str,
+    row_ids: ArrayLike,
+    master_seed: int,
+    materiality_margin: float,
+    interval_alpha: float = 0.05,
+) -> NDArray[np.bool_]:
+    """Retain the highest uncertainty scores at a fixed fold-level fraction.
+
+    The fraction is applied to every held-out fold independently by the caller.
+    It is a graded second-stage filter, not a compensatory score: downstream
+    construction still requires every essential evidence check to pass.
+    """
+
+    if (
+        not isinstance(retention_fraction, (int, float))
+        or isinstance(retention_fraction, bool)
+        or not math.isfinite(float(retention_fraction))
+        or not 0.0 < float(retention_fraction) <= 1.0
+    ):
+        raise ValueError("retention_fraction must lie inside (0, 1]")
+    score = uncertainty_ranking_score(
+        effect,
+        interval_lower,
+        interval_upper,
+        materiality_margin=materiality_margin,
+        interval_alpha=interval_alpha,
+    )
+    accept_count = math.floor(float(retention_fraction) * score.shape[0])
+    return select_exact_count(
+        score,
+        accept_count,
+        trial_ids=trial_ids,
+        row_ids=row_ids,
+        master_seed=master_seed,
+        accept_highest=True,
     )
 
 

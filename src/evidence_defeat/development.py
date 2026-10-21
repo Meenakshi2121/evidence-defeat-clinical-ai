@@ -98,6 +98,8 @@ class DevelopmentScientificResults:
     """Complete non-confirmatory metric profile for one development run."""
 
     essential_checks: tuple[str, ...]
+    graded_uncertainty_filter_enabled: bool
+    graded_uncertainty_retention_fraction: float
     primary_material_unsafe_acceptance_contrast: float
     methods: dict[str, dict[str, Any]]
     random_deferral: dict[str, float]
@@ -165,11 +167,17 @@ def plan_development_runs(
         raise ValueError(f"unknown Stage C candidate: {candidate_id}")
     candidate = register[candidate_id]
     tiers = development.bank["tiers"]
+    authorised_tiers = set(candidate["authorised_tiers"])
+    if tier is not None and tier not in authorised_tiers:
+        raise ValueError(
+            f"tier {tier!r} is not authorised for candidate {candidate_id}"
+        )
     selected_tiers = (
         [
             name
             for name, values in tiers.items()
-            if _candidate_in_scope(candidate["status"], values["candidate_scope"])
+            if name in authorised_tiers
+            and _candidate_in_scope(candidate["status"], values["candidate_scope"])
         ]
         if tier is None
         else [tier]
@@ -353,6 +361,10 @@ def execute_development_run(
     )
     results = DevelopmentScientificResults(
         essential_checks=construction.gate.essential_checks,
+        graded_uncertainty_filter_enabled=construction.gate.graded_uncertainty_applied,
+        graded_uncertainty_retention_fraction=float(
+            analysis["gate"]["uncertainty"]["graded_filter"]["retention_fraction"]
+        ),
         primary_material_unsafe_acceptance_contrast=(
             truth.primary_material_unsafe_acceptance_contrast
         ),
@@ -567,8 +579,11 @@ def _development_invariants(
     spec: DevelopmentRunSpec,
     hashes: dict[str, str],
 ) -> tuple[InvariantResult, ...]:
-    expected_gate = np.logical_and.reduce(
+    expected_evidence_qualified = np.logical_and.reduce(
         [construction.checks[name] for name in construction.gate.essential_checks]
+    )
+    expected_complete = (
+        expected_evidence_qualified & construction.gate.graded_uncertainty_acceptance
     )
     methods = truth.metrics
     governance_metric = project.development_validation["phase_boundaries"][
@@ -593,8 +608,17 @@ def _development_invariants(
             ),
         ),
         InvariantResult(
-            "complete_gate_is_logical_and_of_essential_checks",
-            bool(np.array_equal(expected_gate, construction.gate.complete)),
+            "evidence_qualification_is_logical_and_of_essential_checks",
+            bool(
+                np.array_equal(
+                    expected_evidence_qualified,
+                    construction.gate.evidence_qualified,
+                )
+            ),
+        ),
+        InvariantResult(
+            "complete_gate_applies_graded_uncertainty_after_evidence_checks",
+            bool(np.array_equal(expected_complete, construction.gate.complete)),
         ),
         InvariantResult(
             "uncertainty_comparator_has_exact_matched_coverage",

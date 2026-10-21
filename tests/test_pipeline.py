@@ -157,3 +157,50 @@ def test_cross_fitted_construction_is_complete_and_matches_fold_coverage(
     assert record_defect.any()
     assert not result.checks["record_adequacy"][record_defect].any()
     np.testing.assert_allclose(result.record_observed_fraction[record_defect], 8 / 11)
+
+
+def test_hierarchical_graded_uncertainty_filters_each_heldout_fold(
+    diagnostic_configs: tuple[dict, dict],
+) -> None:
+    baseline_analysis, simulation = diagnostic_configs
+    analysis = deepcopy(baseline_analysis)
+    analysis["gate"]["uncertainty"]["essential"] = False
+    analysis["gate"]["uncertainty"]["graded_filter"]["enabled"] = True
+    analysis["gate"]["uncertainty"]["graded_filter"]["retention_fraction"] = 0.80
+    generated = generate_simulation(
+        SimulationScenario(
+            scenario_id="pipeline-hierarchical-check",
+            sample_size=300,
+            defect="combined",
+            replicate_id=1,
+        ),
+        simulation,
+    )
+    schema = CovariateSchema(
+        continuous=tuple(f"x{number}" for number in range(1, 11)),
+        categorical=("group",),
+    )
+    frame = generated.observed
+
+    result = run_cross_fitted_construction(
+        frame.loc[:, list(schema.columns)],
+        frame["outcome"].to_numpy(),
+        frame["treatment"].to_numpy(),
+        frame["row_id"].to_numpy(),
+        schema=schema,
+        trial_id="simulation",
+        run_id="pipeline-hierarchical-check-1",
+        outcome_type="binary",
+        analysis_config=analysis,
+    )
+
+    assert result.gate.graded_uncertainty_applied is True
+    assert not np.any(result.gate.complete & ~result.gate.evidence_qualified)
+    for fold_id in np.unique(result.fold_ids):
+        in_fold = result.fold_ids == fold_id
+        assert result.gate.graded_uncertainty_acceptance[in_fold].sum() == int(
+            np.floor(0.80 * in_fold.sum())
+        )
+        assert result.uncertainty_only_acceptance[in_fold].sum() == (
+            result.gate.complete[in_fold].sum()
+        )

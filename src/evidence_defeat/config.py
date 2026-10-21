@@ -101,6 +101,24 @@ def validate_project_config(config: ProjectConfig) -> None:
         raise ConfigurationError(
             "The locked baseline must retain decision uncertainty as essential"
         )
+    baseline_graded = _require(
+        analysis,
+        "gate",
+        "uncertainty",
+        "graded_filter",
+    )
+    if _require(baseline_graded, "enabled") is not False:
+        raise ConfigurationError("The locked baseline cannot use the graded filter")
+    if float(_require(baseline_graded, "retention_fraction")) != 1.0:
+        raise ConfigurationError("The baseline graded retention must equal one")
+    if _require(baseline_graded, "ranking_population") != (
+        "all_rows_within_outer_fold"
+    ):
+        raise ConfigurationError("The graded-filter ranking population has changed")
+    if _require(baseline_graded, "ranking_score") != (
+        "(abs(effect)-delta)/standard_error"
+    ):
+        raise ConfigurationError("The graded uncertainty score has changed")
     if (
         _require(analysis, "comparators", "uncertainty_only", "matched_coverage")
         is not True
@@ -698,6 +716,9 @@ def validate_development_config(
         "screening",
         "fairness_stress",
         "finalist_robustness",
+        "revision_screening",
+        "revision_fairness_stress",
+        "revision_finalist_robustness",
     }:
         raise ConfigurationError("Development tiers have changed")
     scenario_ids: set[str] = set()
@@ -773,6 +794,8 @@ def validate_development_config(
         "gate.reference_support.pass_quantile",
         "gate.multiplicity.minimum_estimators_supporting_primary_action",
         "gate.uncertainty.essential",
+        "gate.uncertainty.graded_filter.enabled",
+        "gate.uncertainty.graded_filter.retention_fraction",
         "learners.primary.interval_alpha_primary",
     }
     if set(allowed_paths) != expected_paths:
@@ -890,6 +913,25 @@ def _validate_candidate(
         raise ConfigurationError(
             f"Candidate {candidate_id} uses prohibited overrides: {sorted(unknown)}"
         )
+    authorised_tiers = _require(candidate, "authorised_tiers")
+    if (
+        not isinstance(authorised_tiers, list)
+        or not authorised_tiers
+        or len(set(authorised_tiers)) != len(authorised_tiers)
+    ):
+        raise ConfigurationError(
+            f"Candidate {candidate_id} authorised tiers must be a non-empty list"
+        )
+    configured_tiers = {
+        "screening",
+        "fairness_stress",
+        "finalist_robustness",
+        "revision_screening",
+        "revision_fairness_stress",
+        "revision_finalist_robustness",
+    }
+    if not set(authorised_tiers).issubset(configured_tiers):
+        raise ConfigurationError(f"Candidate {candidate_id} has an invalid tier")
     complexity = _require(candidate, "complexity_rank")
     if (
         not isinstance(complexity, int)
@@ -914,6 +956,9 @@ def _validate_candidate_analysis_values(analysis: dict[str, Any]) -> None:
     )
     alpha = _require(analysis, "learners", "primary", "interval_alpha_primary")
     uncertainty_essential = _require(analysis, "gate", "uncertainty", "essential")
+    graded = _require(analysis, "gate", "uncertainty", "graded_filter")
+    graded_enabled = _require(graded, "enabled")
+    retention_fraction = _require(graded, "retention_fraction")
     if not 0.0 <= float(observed) <= 1.0:
         raise ConfigurationError("Record threshold must lie in [0, 1]")
     if not 0.0 < float(support) < 1.0:
@@ -928,6 +973,22 @@ def _validate_candidate_analysis_values(analysis: dict[str, Any]) -> None:
         raise ConfigurationError("Interval alpha must lie inside (0, 1)")
     if not isinstance(uncertainty_essential, bool):
         raise ConfigurationError("Uncertainty essential flag must be Boolean")
+    if not isinstance(graded_enabled, bool):
+        raise ConfigurationError("Graded-filter enabled flag must be Boolean")
+    if (
+        not isinstance(retention_fraction, (int, float))
+        or isinstance(retention_fraction, bool)
+        or not 0.0 < float(retention_fraction) <= 1.0
+    ):
+        raise ConfigurationError("Graded retention must lie inside (0, 1]")
+    if graded_enabled and uncertainty_essential:
+        raise ConfigurationError(
+            "The strict uncertainty check and graded filter cannot both be active"
+        )
+    if _require(graded, "ranking_population") != "all_rows_within_outer_fold":
+        raise ConfigurationError("The graded ranking population has changed")
+    if _require(graded, "ranking_score") != ("(abs(effect)-delta)/standard_error"):
+        raise ConfigurationError("The graded uncertainty score has changed")
 
 
 def _set_nested_value(mapping: dict[str, Any], path: str, value: Any) -> None:
