@@ -66,42 +66,30 @@ def test_baseline_cannot_enter_later_tiers_before_retention() -> None:
         )
 
 
-def test_finalist_c001_remains_eligible_for_fairness_stress() -> None:
+def test_rejected_c001_cannot_reenter_fairness_stress() -> None:
     project = load_project_config(PROJECT_ROOT)
     development = load_development_config(PROJECT_ROOT, project=project)
 
-    planned = plan_development_runs(
-        project,
-        development,
-        "C001",
-        tier="fairness_stress",
-    )
-
-    assert len(planned) == 30
-    assert {item.scenario.replicate_id for item in planned} == set(
-        range(210000, 210005)
-    )
-    assert all(item.candidate_id == "C001" for item in planned)
-    assert all(item.scenario.sample_size == 2000 for item in planned)
+    with pytest.raises(ValueError, match="not eligible"):
+        plan_development_runs(
+            project,
+            development,
+            "C001",
+            tier="fairness_stress",
+        )
 
 
-def test_finalist_c001_can_enter_finalist_robustness() -> None:
+def test_rejected_c001_cannot_reenter_finalist_robustness() -> None:
     project = load_project_config(PROJECT_ROOT)
     development = load_development_config(PROJECT_ROOT, project=project)
 
-    planned = plan_development_runs(
-        project,
-        development,
-        "C001",
-        tier="finalist_robustness",
-    )
-
-    assert len(planned) == 25
-    assert {item.scenario.replicate_id for item in planned} == set(
-        range(220000, 220005)
-    )
-    assert all(item.candidate_id == "C001" for item in planned)
-    assert all(item.scenario.sample_size == 2000 for item in planned)
+    with pytest.raises(ValueError, match="not eligible"):
+        plan_development_runs(
+            project,
+            development,
+            "C001",
+            tier="finalist_robustness",
+        )
 
 
 def test_screening_run_can_be_selected_without_opening_later_tiers() -> None:

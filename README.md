@@ -67,23 +67,27 @@ does not replace causal inference, statistical validation or clinical evidence.
 
 Stage A software diagnostics and Stage B computational feasibility checks have
 passed; neither stage exposed scientific performance. Baseline candidate
-`C000` then completed 60 exploratory Stage C screening runs. Its four-check
-gate was rejected as a final architecture because the decision-certainty check
-collapsed coverage. Results-informed child candidate `C001` subsequently
-completed all 60 three-check screening runs and all 30 dedicated fairness-
-stress runs. At exactly matched coverage, its primary unsafe-acceptance
-contrast favoured C001 in both tiers. The fairness stress also exposed the
-intended safety--access trade-off: the group with concentrated evidence defects
-was deferred more often, while its raw unsafe-acceptance disadvantage under
-uncertainty-only deferral was reduced. C001 is therefore promoted unchanged to
-the prespecified finalist-robustness tier. This is finalist status, not a
-development freeze, fairness guarantee or validation claim. Weak multiplicity-
-defect recovery, incomplete evidence-standardisation balance and residual
-standardised safety gaps remain adverse findings. Stage C remains exploratory
-and unblinded, while the independent validation bank and proposed multitrial
-data remain unopened. The final candidate must still pass robustness review,
-be frozen, receive supervisor and statistical review, and be registered before
-validation begins.
+`C000` completed 60 exploratory Stage C screening runs and was rejected because
+its binary decision-certainty check collapsed coverage. Results-informed child
+candidate `C001` then completed 60 three-check screening runs, 30 dedicated
+fairness-stress runs and 25 finalist-robustness runs without software or
+invariant failures.
+
+C001's robustness result was mixed. Across all 25 runs, its matched-coverage
+unsafe-acceptance contrast against uncertainty-only deferral was -0.003760
+(95% confidence interval -0.015449 to 0.007929). In the 20 runs containing
+generated evidence defects, the contrast favoured C001 (-0.014950; -0.023419
+to -0.006481), but in the five no-defect runs it favoured uncertainty-only
+deferral (0.041000; 0.027083 to 0.054917). Evidence standardisation failed its
+balance criterion in every robustness run, so standardised fairness gaps are
+not interpreted. The raw coverage gap also remained an adverse access signal.
+
+C001 is therefore not frozen as the final framework. It is recorded as a
+rejected final architecture and may serve only as the disclosed parent of a
+new, results-informed development candidate. The independent validation bank
+and proposed multitrial data remain unopened. Any child candidate must be
+specified and committed before execution, use fresh development runs, and
+complete the development, review and registration sequence before validation.
 
 The dated development/validation boundary is defined in
 `protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
@@ -144,14 +148,10 @@ invariant statuses and reproducibility fingerprints only.
 ## Transparent Stage C development
 
 Stage C runs expose scientific simulation results and therefore require a
-clean, committed worktree. With the C001 fairness-stress decision committed,
-inspect the plan before starting its authorised finalist-robustness tier:
-
-```bash
-poetry install
-poetry run evidence-defeat-dev plan --candidate C001 --tier finalist_robustness
-poetry run evidence-defeat-dev batch --candidate C001 --tier finalist_robustness
-```
+clean, committed worktree. C001 has completed its authorised development tiers
+and must not be rerun or tuned. The next executable development plan will be
+documented only after a child candidate has been specified, reviewed, committed
+and tagged before its results are exposed.
 
 The batch is resumable and writes ignored outputs under
 `results/development/stage-c/`. Each report records the candidate, code commit,

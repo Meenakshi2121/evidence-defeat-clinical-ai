@@ -1,6 +1,6 @@
 # Development candidate log v0.2
 
-**Status:** C000 and C001 development results recorded; C001 promoted to finalist robustness
+**Status:** C000 and C001 development results recorded; C001 requires revision and is not frozen
 
 **Date opened:** 14 October 2026
 
@@ -18,7 +18,7 @@ candidates remain visible.
 | Candidate ID | Parent ID | Status | Pre-run commit | Configuration hash | Development-bank version | Decision |
 | --- | --- | --- | --- | --- | --- | --- |
 | C000 | — | Screening complete | `stage-c-c000-pre-run-v0.1`; `be9d331e1a5e4654623fc77f7a670f9ef1e6b167` in the manifest | Captured in the manifest below | v0.1 | Revise; four-check architecture not retained |
-| C001 | C000 | Screening and fairness stress complete; finalist | `stage-c-c001-pre-run-v0.1`; `562f02cd30ed10dd5b9b070e53b42dd3b97b4179`; fairness stress: `stage-c-c001-fairness-pre-run-v0.1`, commit `564cb6c6f8d9d2b5d94ca5213a9f7233cdc96859` | Captured in the manifests below | v0.1 | Promote unchanged to finalist robustness; not frozen or validated |
+| C001 | C000 | Development complete; rejected as final architecture | Screening: `stage-c-c001-pre-run-v0.1`, commit `562f02cd30ed10dd5b9b070e53b42dd3b97b4179`; fairness stress: `stage-c-c001-fairness-pre-run-v0.1`, commit `564cb6c6f8d9d2b5d94ca5213a9f7233cdc96859`; robustness: `stage-c-c001-robustness-pre-run-v0.1`, commit `40d654241480f0f612218c15d79efae563cdbddf` | Captured in the manifests below | v0.1 | Revise through a prospectively specified child; do not freeze or validate C001 |
 
 The pre-run Git hash cannot be written self-referentially into the commit it
 identifies. The annotated tag names that clean commit; the machine-generated
@@ -288,6 +288,92 @@ any result is exposed.
   complete robustness profile, written selection rationale, supervisor and
   statistical review, and registration.
 - Reviewer initials and date: provisional study-author decision, 19 October
+  2026; supervisor and statistical review pending.
+
+**Finalist-robustness post-run record**
+
+- Run manifest and development-bank version: 25 of 25 finalist-robustness
+  units completed under development bank v0.1 at clean pre-run commit
+  `40d654241480f0f612218c15d79efae563cdbddf`; output
+  `results/development/stage-c/C001/c001-finalist-robustness-v0.1/manifest.json`.
+  Every run used 2,000 observations, every report passed, and all 200 invariant
+  evaluations passed. The archived output SHA-256 is
+  `66fb0c722ccd2c9e1e5039da93d4aa2302e0109fe780cc307b155518f5938889`;
+  the separately exported summary SHA-256 is
+  `fd3d62c6d73f9408cda1d850601d76dee07caaef9425ce0c49f080746b2c61e8`
+  and matched the archived summary byte for byte.
+- Material unsafe acceptance at matched coverage: across all 25 robustness
+  runs, the complete-gate minus uncertainty-only contrast was -0.003760 (95%
+  confidence interval -0.015449 to 0.007929), so the planned overall
+  robustness comparison was inconclusive. In the 20 defect-present runs, the
+  contrast favoured C001 (-0.014950; -0.023419 to -0.006481), as did the
+  contrast with matched random deferral (-0.026461; -0.034871 to -0.018051).
+  In the five no-defect runs, however, uncertainty-only deferral was safer:
+  the C001 minus uncertainty-only contrast was 0.041000 (0.027083 to
+  0.054917). Scenario means for the primary contrast were -0.021200 for
+  continuous defects, -0.019800 for group shift, -0.009800 for linear
+  effects, -0.009000 for strong effects and 0.041000 when heterogeneity and
+  generated evidence defects were absent.
+- Coverage: mean complete-gate coverage was 44.60% in the 20 defect-present
+  runs (95% confidence interval 39.65% to 49.54%) and 60.96% in the five
+  no-defect runs. Exact matched coverage with uncertainty-only deferral was
+  maintained within every run.
+- Deployed policy utility: in defect-present runs, C001 exceeded matched random
+  deferral by 0.001933 (95% confidence interval 0.000189 to 0.003676) and the
+  population default by 0.006909 (0.003479 to 0.010339). Its utility difference
+  from uncertainty-only deferral was 0.000759 (-0.000737 to 0.002254), while
+  its difference from ungated individualisation was -0.007428 (-0.012090 to
+  -0.002766). In the no-defect runs, C001 was worse than uncertainty-only
+  deferral by -0.001640 (-0.002197 to -0.001083).
+- Oracle regret and regret relative to default: the utility profile shows that
+  C001 retained benefit over the default when defects were present but paid a
+  cost relative to ungated individualisation. Its no-defect disadvantage
+  demonstrates that the evidence-defeat gate cannot replace graded decision
+  uncertainty as a general safeguard.
+- Raw group differences: in the 20 defect-present runs, the mean coverage gap
+  (group 1 minus group 0) was -0.052139 (95% confidence interval -0.095276 to
+  -0.009002), and the raw material-unsafe-acceptance gap was -0.026989
+  (-0.049337 to -0.004641). These are descriptive group differences under the
+  generated scenarios, not evidence of equal access or a fairness guarantee.
+- Evidence-standardised group differences: estimation was technically
+  eligible in all 25 runs, but none met the prespecified balance criterion.
+  Evidence-standardised gaps are therefore not interpreted.
+- Scenario and seed stability: C001's direction of advantage depended on the
+  evidence state. The primary contrast favoured C001 in the defect-present
+  pool but clearly favoured uncertainty-only deferral in the no-defect
+  scenario. Record adequacy recovered its generated defect with sensitivity
+  and specificity of 1.000. Reference support had pooled sensitivity 0.8291
+  and specificity 0.9912. Model multiplicity remained weak against its
+  generated label (sensitivity 0.4338; specificity 0.5559), while the
+  uncertainty check had sensitivity 0.9861 but specificity 0.0119.
+- Ablations and action errors: in defect-present runs, removing record
+  adequacy, reference support or model multiplicity increased material unsafe
+  acceptance by 0.044450 (0.036914 to 0.051986), 0.007725 (0.005576 to
+  0.009874), and 0.145700 (0.132535 to 0.158865), respectively. The accepted
+  actionable-error contrast against uncertainty-only deferral was -0.030993
+  (-0.057650 to -0.004337). These results show that the three checks can carry
+  safety information even though the multiplicity check is a weak classifier
+  of its generated defect label.
+- Software or invariant failures: none. All 25 reports passed, all 200
+  invariant evaluations passed, every worktree was clean at run start, and
+  generated-data and fold hashes were unique as required. The outputs remain
+  exploratory and explicitly ineligible for confirmatory evidence.
+- Interpretation, including adverse findings: C001 provides exploratory
+  evidence that non-compensatory evidence-defeat checks improve safety when
+  the tested evidence defects are present. It does not establish superiority
+  across evidence states, because uncertainty-only deferral was superior in
+  the no-defect scenario and the overall interval included zero. The raw access
+  gap, failed standardisation balance and weak multiplicity-label recovery also
+  prohibit claims of proven fairness, universal benefit or deployment
+  readiness. The results instead support treating distinct evidence defeaters
+  and graded uncertainty as complementary safeguards.
+- Decision: reject C001 as the final architecture and do not freeze, register
+  or validate it. A results-informed child candidate may be developed only
+  after its hierarchical combination of hard evidence defeaters and graded
+  uncertainty, fresh development runs, expected benefit and falsification
+  criteria are specified and committed. Reserved validation and RCT Bench
+  patient-level data remain unopened.
+- Reviewer initials and date: provisional study-author decision, 21 October
   2026; supervisor and statistical review pending.
 
 ## Required entry for each candidate
