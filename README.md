@@ -85,11 +85,22 @@ balance criterion in every robustness run, so standardised fairness gaps are
 not interpreted. The raw coverage gap also remained an adverse access signal.
 
 C001 is therefore not frozen as the final framework. It is recorded as a
-rejected final architecture. Results-informed child candidate `C002` is now
-specified but has not been run. C002 combines C001's three non-compensatory
-evidence checks with a prespecified graded uncertainty filter retaining the
-highest-ranked 80% within each held-out fold. Only a fresh 35-run revision-
-screening tier is currently authorised. The independent validation bank and
+rejected final architecture. Results-informed child candidate `C002` combines
+C001's three non-compensatory evidence checks with a prespecified graded
+uncertainty filter retaining the highest-ranked 80% within each held-out fold.
+C002 has now completed all 35 authorised revision-screening runs. At exactly
+matched coverage, its material-unsafe-acceptance contrast against uncertainty-
+only deferral was -0.009171 (95% confidence interval -0.013435 to -0.004908)
+overall and -0.010440 (-0.014358 to -0.006522) in the 25 defect-present runs.
+Mean scenario coverage ranged from 43.16% to 57.04%, and deployed utility was
+0.003882 (0.002798 to 0.004966) above the population default overall.
+
+C002 is retained unchanged for the fresh revision-fairness-stress tier; this
+is a tier-promotion decision, not finalist status or validation. Evidence
+standardisation met its balance criterion in none of the 35 screening runs,
+the raw group-1 coverage gap averaged -0.0310, and multiplicity-label recovery
+remained weak. These adverse findings require dedicated fairness evaluation
+and prohibit claims of proven fairness. The independent validation bank and
 proposed multitrial data remain unopened. C002 must complete development,
 review and registration before validation.
 
@@ -155,18 +166,19 @@ invariant statuses and reproducibility fingerprints only.
 
 Stage C runs expose scientific simulation results and therefore require a
 clean, committed worktree. C001 has completed its authorised development tiers
-and must not be rerun or tuned. After C002's implementation is committed and
-tagged, inspect its fresh screening plan before starting it:
+and must not be rerun or tuned. C002 has completed revision screening and is
+retained unchanged for its fresh fairness-stress tier. After this decision is
+committed and tagged, inspect that tier before starting it:
 
 ```bash
 poetry run evidence-defeat-dev plan \
   --candidate C002 \
-  --tier revision_screening
+  --tier revision_fairness_stress
 ```
 
 Do not execute the batch until the plan identifies the intended clean commit,
-35 fresh runs, replicate identifiers 230000--230004 and only
-`dev_v0_1__revision_` scenarios.
+30 fresh runs, replicate identifiers 240000--240004 and only
+`dev_v0_1__revision_fair_` scenarios.
 
 The batch is resumable and writes ignored outputs under
 `results/development/stage-c/`. Each report records the candidate, code commit,

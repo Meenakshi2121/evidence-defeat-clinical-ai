@@ -112,7 +112,7 @@ def test_screening_run_can_be_selected_without_opening_later_tiers() -> None:
     assert selected == planned
 
 
-def test_c002_uses_only_fresh_revision_screening_runs() -> None:
+def test_c002_uses_only_authorised_fresh_revision_tiers() -> None:
     project = load_project_config(PROJECT_ROOT)
     development = load_development_config(PROJECT_ROOT, project=project)
 
@@ -130,6 +130,23 @@ def test_c002_uses_only_fresh_revision_screening_runs() -> None:
     assert all("revision_" in item.scenario.scenario_id for item in planned)
     assert all(item.candidate_id == "C002" for item in planned)
 
+    fairness = plan_development_runs(
+        project,
+        development,
+        "C002",
+        tier="revision_fairness_stress",
+    )
+    assert len(fairness) == 30
+    assert {item.scenario.replicate_id for item in fairness} == set(
+        range(240000, 240005)
+    )
+    assert all(
+        item.scenario.scenario_id.startswith("dev_v0_1__revision_fair_")
+        for item in fairness
+    )
+    assert all(item.candidate_id == "C002" for item in fairness)
+    assert all(item.scenario.sample_size == 2000 for item in fairness)
+
     with pytest.raises(ValueError, match="not authorised"):
         plan_development_runs(project, development, "C002", tier="screening")
     with pytest.raises(ValueError, match="not authorised"):
@@ -137,7 +154,7 @@ def test_c002_uses_only_fresh_revision_screening_runs() -> None:
             project,
             development,
             "C002",
-            tier="revision_fairness_stress",
+            tier="revision_finalist_robustness",
         )
 
 
