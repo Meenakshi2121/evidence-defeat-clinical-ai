@@ -1,6 +1,6 @@
 # Development candidate log v0.2
 
-**Status:** C000 and C001 results recorded; C002 promoted to revision finalist robustness
+**Status:** Stage C complete; C002 provisionally selected for freeze review
 
 **Date opened:** 14 October 2026
 
@@ -19,7 +19,7 @@ candidates remain visible.
 | --- | --- | --- | --- | --- | --- | --- |
 | C000 | — | Screening complete | `stage-c-c000-pre-run-v0.1`; `be9d331e1a5e4654623fc77f7a670f9ef1e6b167` in the manifest | Captured in the manifest below | v0.1 | Revise; four-check architecture not retained |
 | C001 | C000 | Development complete; rejected as final architecture | Screening: `stage-c-c001-pre-run-v0.1`, commit `562f02cd30ed10dd5b9b070e53b42dd3b97b4179`; fairness stress: `stage-c-c001-fairness-pre-run-v0.1`, commit `564cb6c6f8d9d2b5d94ca5213a9f7233cdc96859`; robustness: `stage-c-c001-robustness-pre-run-v0.1`, commit `40d654241480f0f612218c15d79efae563cdbddf` | Captured in the manifests below | v0.1 | Revise through a prospectively specified child; do not freeze or validate C001 |
-| C002 | C001 | Revision screening and fairness stress complete; finalist for robustness | Screening: `stage-c-c002-pre-run-v0.1`, commit `e8d356f92185996f924310f33c6f0f25d3b9b241`; fairness stress: `stage-c-c002-fairness-pre-run-v0.1`, commit `58c83f816335442eb10b8b89cea7bef32a1b06c1` | Captured in the manifests below | v0.1 fresh revision namespace | Promote unchanged to revision finalist robustness; not frozen or validated |
+| C002 | C001 | Development complete; provisional final candidate pending review | Screening: `stage-c-c002-pre-run-v0.1`, commit `e8d356f92185996f924310f33c6f0f25d3b9b241`; fairness stress: `stage-c-c002-fairness-pre-run-v0.1`, commit `58c83f816335442eb10b8b89cea7bef32a1b06c1`; robustness: `stage-c-c002-robustness-pre-run-v0.1`, commit `e797aabc4f4c469a3a4923ad08fc505b66fdbc86` | Captured in the manifests below | v0.1 fresh revision namespace | Provisionally select unchanged for Stage D freeze, conditional on supervisor and statistical review; not yet frozen or validated |
 
 The pre-run Git hash cannot be written self-referentially into the commit it
 identifies. The annotated tag names that clean commit; the machine-generated
@@ -600,6 +600,92 @@ any result is exposed.
   C002 is a finalist for robustness testing, not the frozen final candidate.
   Reserved validation simulations, RCT Bench patient-level data and real
   trial outcomes remain unopened.
+- Reviewer initials and date: provisional study-author decision, 23 October
+  2026; supervisor and statistical review pending.
+
+**Revision-finalist-robustness post-run record**
+
+- Run manifest and development-bank version: 25 of 25 revision-finalist-
+  robustness units completed under development bank v0.1 at clean pre-run
+  commit `e797aabc4f4c469a3a4923ad08fc505b66fdbc86`; output
+  `results/development/stage-c/C002/c002-revision-finalist-robustness-v0.1/manifest.json`.
+  Every run used 2,000 observations and the fresh 250000--250004 replicate
+  namespace. The archived output SHA-256 was
+  `8d2acae67feb72eb57bcbd70f6c7803a41bb9497fd7e20a10f7f11a97e56b857`;
+  the separately exported summary SHA-256 was
+  `32d9f5a0c48bc0833fc51a2c29aa553d609061456b0f695f3aa48ac57314b023`
+  and matched the archived summary byte for byte.
+- Material unsafe acceptance at matched coverage: across all 25 runs, the
+  C002 minus uncertainty-only contrast was -0.010160 (95% confidence interval
+  -0.014963 to -0.005357). In the 20 defect-present runs, the contrast was
+  -0.011825 (-0.016551 to -0.007099). All five scenario means favoured C002:
+  -0.003500 for absent heterogeneity, -0.011800 for continuous defects,
+  -0.012500 for group shift, -0.016400 for linear effects and -0.006600 for
+  strong effects. Exact matched coverage was preserved in every run.
+- Coverage: mean C002 coverage was 45.236% overall (95% confidence interval
+  41.311% to 49.161%) and ranged from 33.48% to 58.04% across scenario means.
+  Every scenario remained above the prespecified 25% development floor.
+- Deployed policy utility: C002 differed from uncertainty-only deferral by
+  -0.000224 (95% confidence interval -0.001065 to 0.000617), so robustness did
+  not establish a utility difference between the matched-coverage methods.
+  C002 exceeded matched random deferral by 0.002819 (0.000348 to 0.005291)
+  and the population default by 0.007747 (0.003344 to 0.012150). It was
+  0.005906 lower than ungated individualisation (-0.009837 to -0.001976),
+  preserving the expected safety--utility trade-off.
+- Oracle regret and regret relative to default: relative to uncertainty-only
+  deferral, the oracle-regret difference was 0.000224 (-0.000617 to
+  0.001065). Relative to the population default, C002 reduced oracle regret by
+  0.007747 (0.003344 to 0.012150 absolute reduction).
+- Raw group differences: the overall group-1-minus-group-0 coverage gap was
+  0.009821 (95% confidence interval -0.022264 to 0.041906), and the material-
+  unsafe-acceptance gap was -0.012573 (-0.041806 to 0.016660). The utility gap
+  was 0.011714 (0.005020 to 0.018407). These are descriptive results across
+  generated robustness scenarios and do not establish parity or fairness.
+- Evidence-standardised group differences: estimation was technically
+  eligible in all 25 runs, but none met the prespecified balance criterion.
+  The mean maximum absolute standardised mean difference was 0.218448
+  (0.202373 to 0.234523). Evidence-standardised group gaps are therefore not
+  interpreted. The dedicated fairness-stress tier remains the appropriate
+  source for the previously reported balanced subset analysis.
+- Scenario and seed stability: all five scenario means favoured C002 and 17
+  of 25 run-level contrasts were negative, one was zero and seven were
+  positive. The no-defect scenario was seed-sensitive: four runs slightly
+  favoured uncertainty-only deferral (differences 0.0005, 0.0035, 0.0005 and
+  0.0095), while one favoured C002 by -0.0315. Its mean contrast of -0.003500
+  met the recorded development boundary, but its interval (-0.023463 to
+  0.016463) was wide. This uncertainty must be carried into independent
+  validation rather than resolved by further tuning.
+- Check recovery and ablations: record adequacy had sensitivity and
+  specificity of 1.000. Reference support had sensitivity 0.8479 and
+  specificity 0.9883. Model multiplicity remained weak against its generated
+  label (sensitivity 0.4411; specificity 0.5787). Removing record adequacy,
+  reference support or model multiplicity increased material unsafe acceptance
+  by 0.028660 (0.021153 to 0.036167), 0.008320 (0.005811 to 0.010829), and
+  0.084960 (0.066409 to 0.103511), respectively. The checks therefore carried
+  complementary safety information despite limited construct recovery for
+  model multiplicity.
+- Software or invariant failures: none. All 25 reports passed, all 225
+  invariant evaluations passed, and every worktree was clean at run start.
+  All 25 generated-data hashes and all 25 fold-assignment hashes were unique.
+  The outputs remain exploratory and explicitly ineligible for confirmatory
+  evidence.
+- Interpretation, including adverse findings: C002 met the recorded numerical
+  development boundaries for defect-present safety, no-defect mean
+  performance, access and utility relative to the default. The small and
+  uncertain utility difference from uncertainty-only deferral, lower utility
+  than ungated individualisation, no-defect seed sensitivity, failed
+  standardisation balance and weak multiplicity-label recovery prevent claims
+  of universal superiority, proven fairness, deployment readiness or
+  validation.
+- Decision: provisionally select C002 unchanged as the final development
+  candidate and recommend progression to Stage D freeze, conditional on
+  supervisor and statistical review of the complete record and written
+  rationale. Do not tune or rerun C002. Reserved validation simulations, RCT
+  Bench patient-level data and real trial outcomes remain unopened. C002 is
+  not frozen, registered or independently validated until the Stage D record
+  is completed.
+- Written selection rationale:
+  `protocol/c002_final_selection_rationale_v0.1.md`.
 - Reviewer initials and date: provisional study-author decision, 23 October
   2026; supervisor and statistical review pending.
 
