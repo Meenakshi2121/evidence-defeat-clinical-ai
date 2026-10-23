@@ -95,14 +95,28 @@ overall and -0.010440 (-0.014358 to -0.006522) in the 25 defect-present runs.
 Mean scenario coverage ranged from 43.16% to 57.04%, and deployed utility was
 0.003882 (0.002798 to 0.004966) above the population default overall.
 
-C002 is retained unchanged for the fresh revision-fairness-stress tier; this
-is a tier-promotion decision, not finalist status or validation. Evidence
-standardisation met its balance criterion in none of the 35 screening runs,
-the raw group-1 coverage gap averaged -0.0310, and multiplicity-label recovery
-remained weak. These adverse findings require dedicated fairness evaluation
-and prohibit claims of proven fairness. The independent validation bank and
-proposed multitrial data remain unopened. C002 must complete development,
-review and registration before validation.
+C002 subsequently completed all 30 fresh revision-fairness-stress runs. Its
+matched-coverage material-unsafe-acceptance contrast against uncertainty-only
+deferral was -0.013967 (95% confidence interval -0.019558 to -0.008375), and
+all six scenario means favoured C002. Mean coverage was 48.71%. C002 improved
+utility over matched random deferral and the population default, but its
+utility difference from uncertainty-only deferral was small and uncertain
+(0.000124; -0.000229 to 0.000476).
+
+The fairness result is a safety--access trade-off rather than a parity claim.
+Group 1 received less individualised access under C002 but its raw unsafe-
+acceptance disadvantage under uncertainty-only deferral was removed. Evidence
+standardisation met its balance criterion in all 15 runs with 50% group
+prevalence and none of the 15 runs with 20% prevalence. In balanced runs, the
+standardised unsafe-acceptance gap was compatible with no residual group-1
+disadvantage; the failed 20% balance diagnostics and raw access burden still
+prohibit claims of proven fairness.
+
+C002 is therefore promoted unchanged to the fresh revision-finalist-
+robustness tier. It is a development finalist, not a frozen or validated
+framework. Multiplicity-label recovery remains weak, and the independent
+validation bank and proposed multitrial data remain unopened. C002 must
+complete robustness review, freeze and registration before validation.
 
 The dated development/validation boundary is defined in
 `protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
@@ -166,19 +180,20 @@ invariant statuses and reproducibility fingerprints only.
 
 Stage C runs expose scientific simulation results and therefore require a
 clean, committed worktree. C001 has completed its authorised development tiers
-and must not be rerun or tuned. C002 has completed revision screening and is
-retained unchanged for its fresh fairness-stress tier. After this decision is
-committed and tagged, inspect that tier before starting it:
+and must not be rerun or tuned. C002 has completed revision screening and
+fairness stress and is promoted unchanged to its fresh finalist-robustness
+tier. After this decision is committed and tagged, inspect that tier before
+starting it:
 
 ```bash
 poetry run evidence-defeat-dev plan \
   --candidate C002 \
-  --tier revision_fairness_stress
+  --tier revision_finalist_robustness
 ```
 
 Do not execute the batch until the plan identifies the intended clean commit,
-30 fresh runs, replicate identifiers 240000--240004 and only
-`dev_v0_1__revision_fair_` scenarios.
+25 fresh runs, replicate identifiers 250000--250004 and only
+`dev_v0_1__revision_robust_` scenarios.
 
 The batch is resumable and writes ignored outputs under
 `results/development/stage-c/`. Each report records the candidate, code commit,

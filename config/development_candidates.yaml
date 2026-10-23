@@ -53,7 +53,7 @@ candidates:
 
   C002:
     parent_id: "C001"
-    status: "retained"
+    status: "finalist"
     label: "Hierarchical evidence-defeat and graded-uncertainty gate"
     rationale: "C001 improved safety when generated evidence defects were present but was inferior to uncertainty-only deferral in the no-defect scenario. C002 therefore preserves the non-compensatory Nyaya-inspired evidence-defeat conditions while adding a separate graded uncertainty filter that cannot rescue a failed evidence check."
     intended_change: "First require record adequacy, reference support and model multiplicity. Then retain only rows in the highest 80 percent of the prespecified uncertainty ranking within each held-out fold. Continue comparing with uncertainty-only deferral at the exact final C002 coverage. No learner, evidence-check threshold, outcome, default policy, fairness rule or materiality margin changes."
@@ -72,4 +72,5 @@ candidates:
     authorised_tiers:
       - "revision_screening"
       - "revision_fairness_stress"
+      - "revision_finalist_robustness"
     complexity_rank: 2

@@ -147,15 +147,26 @@ def test_c002_uses_only_authorised_fresh_revision_tiers() -> None:
     assert all(item.candidate_id == "C002" for item in fairness)
     assert all(item.scenario.sample_size == 2000 for item in fairness)
 
+    robustness = plan_development_runs(
+        project,
+        development,
+        "C002",
+        tier="revision_finalist_robustness",
+    )
+    assert len(robustness) == 25
+    assert {item.scenario.replicate_id for item in robustness} == set(
+        range(250000, 250005)
+    )
+    assert all(
+        item.scenario.scenario_id.startswith("dev_v0_1__revision_robust_")
+        for item in robustness
+    )
+    assert all(item.candidate_id == "C002" for item in robustness)
+    assert all(item.scenario.sample_size == 2000 for item in robustness)
+    assert development.candidates["candidates"]["C002"]["status"] == "finalist"
+
     with pytest.raises(ValueError, match="not authorised"):
         plan_development_runs(project, development, "C002", tier="screening")
-    with pytest.raises(ValueError, match="not authorised"):
-        plan_development_runs(
-            project,
-            development,
-            "C002",
-            tier="revision_finalist_robustness",
-        )
 
 
 def test_prohibited_candidate_override_is_rejected() -> None:
