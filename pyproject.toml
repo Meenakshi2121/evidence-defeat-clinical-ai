@@ -21,6 +21,7 @@ dependencies = [
 [project.scripts]
 evidence-defeat-poc = "evidence_defeat.cli:main"
 evidence-defeat-dev = "evidence_defeat.development_cli:main"
+evidence-defeat-validate = "evidence_defeat.validation_cli:main"
 
 [tool.poetry]
 packages = [{ include = "evidence_defeat", from = "src" }]
