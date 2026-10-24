@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets and logs
+.env
+*.log
+*.tmp
+
+# Participant-level and generated data
+data/external/
+data/interim/
+*.parquet
+*.feather
+*.pkl
+*.joblib
+
+# Large run objects
+results/replicates/
+results/cache/
+results/poc/
+results/development/stage-c/
+results/validation/stage-e/
+results/validation/stage-f/

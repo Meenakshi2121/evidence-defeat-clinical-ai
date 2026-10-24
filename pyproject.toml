@@ -8,12 +8,24 @@ version = "0.1.0"
 description = "Evidence-defeat and fair deferral for individualised clinical treatment policies"
 requires-python = ">=3.11"
 dependencies = [
+  "econml==0.17.0",
   "numpy>=1.26,<3",
+  "openpyxl>=3.1,<4",
   "pandas>=2.2,<3",
   "scipy>=1.13,<2",
   "scikit-learn>=1.5,<2",
+  "statsmodels>=0.14,<1",
   "PyYAML>=6,<7",
 ]
+
+[project.scripts]
+evidence-defeat-poc = "evidence_defeat.cli:main"
+evidence-defeat-dev = "evidence_defeat.development_cli:main"
+evidence-defeat-validate = "evidence_defeat.validation_cli:main"
+evidence-defeat-confirm = "evidence_defeat.confirmatory_cli:main"
+
+[tool.poetry]
+packages = [{ include = "evidence_defeat", from = "src" }]
 
 [project.optional-dependencies]
 dev = [
@@ -31,4 +43,3 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-
