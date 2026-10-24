@@ -205,8 +205,28 @@ Stage D froze C002, the primary estimand, success rule and validation grid in
 `protocol-v1.0`. Stage E then used only blinded paired-contrast variances to
 lock the Stage F count at 1,000 replicates in each of ten primary cells. The
 completion record is `protocol/stage_e_variance_record_v1.0.md`. The next step
-is the one-time Stage F confirmatory simulation; real and semisynthetic trial
-evaluations remain later validation layers and are not replaced by simulation.
+is the one-time 10,000-run Stage F confirmatory simulation. Its resumable,
+complete-first-unblinding procedure is specified in
+`protocol/stage_f_execution_v1.0.md`. Real and semisynthetic trial evaluations
+remain later validation layers and are not replaced by simulation.
+
+## Stage F confirmatory execution
+
+Stage F may run only from the exact public `stage-f-runner-v1.0` tag and an
+otherwise clean repository. Initialise the immutable run identity, then execute
+one scenario at a time with resumable per-replicate checkpoints:
+
+```bash
+poetry run evidence-defeat-confirm plan
+poetry run evidence-defeat-confirm init
+poetry run evidence-defeat-confirm run-scenario \
+  --scenario-id confirmatory_v1__record_adequacy_n500 \
+  --max-new-runs 10
+poetry run evidence-defeat-confirm status
+```
+
+The summary command remains locked until all 10,000 primary reports pass. No
+interim scientific result should be inspected or used to stop the experiment.
 
 Development results may motivate a new child candidate only after its parent,
 exact change, rationale and falsification criteria are appended to the

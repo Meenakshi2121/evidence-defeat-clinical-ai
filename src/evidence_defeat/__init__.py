@@ -22,6 +22,13 @@ from evidence_defeat.config import (
     load_project_config,
     validate_development_config,
 )
+from evidence_defeat.confirmatory import (
+    ConfirmatoryRunSpec,
+    execute_confirmatory_run,
+    plan_confirmatory_runs,
+    select_confirmatory_run,
+    summarise_confirmatory_reports,
+)
 from evidence_defeat.development import (
     CheckRecovery,
     DevelopmentFingerprint,
@@ -141,6 +148,7 @@ __version__ = "0.1.0"
 __all__ = [
     "ESTIMATOR_ORDER",
     "CheckRecovery",
+    "ConfirmatoryRunSpec",
     "CovariateSchema",
     "CrossFittedConstruction",
     "CrossFittedPolicyDisagreement",
@@ -204,6 +212,7 @@ __all__ = [
     "evaluate_cross_fitted_policies",
     "evaluate_known_truth_method",
     "evaluate_random_deferral_known_truth",
+    "execute_confirmatory_run",
     "execute_development_run",
     "execute_diagnostic_run",
     "execute_timing_run",
@@ -223,6 +232,7 @@ __all__ = [
     "observed_covariate_mask",
     "original_scale_materiality_margin",
     "package_versions",
+    "plan_confirmatory_runs",
     "plan_development_runs",
     "plan_smoke_runs",
     "plan_stage_b_runs",
@@ -235,12 +245,14 @@ __all__ = [
     "run_cross_fitted_construction",
     "run_cross_fitted_policy_disagreement",
     "scale_training_utility",
+    "select_confirmatory_run",
     "select_development_run",
     "select_near_optimal_candidates",
     "select_population_default",
     "select_smoke_run",
     "select_stage_b_run",
     "simulation_data_sha256",
+    "summarise_confirmatory_reports",
     "summarise_development_reports",
     "treatment_stratified_bootstrap",
     "uncertainty_only_at_matched_coverage",
