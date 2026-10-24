@@ -1,0 +1,152 @@
+schema_version: "1.0"
+status: "frozen_on_protocol_v1_0_tag"
+frozen_date: "2026-10-23"
+purpose: "Prospective validation of the frozen C002 evidence-defeat framework"
+
+freeze:
+  candidate_id: "C002"
+  candidate_name: "three-essential-check gate with graded uncertainty filter"
+  stage_c_completion_commit: "6f9ab161e0d16676836a1f05b8f4442e5157b4d6"
+  stage_c_completion_tag: "stage-c-c002-development-complete-v0.1"
+  protocol_tag: "protocol-v1.0"
+  implementation_commit_used_for_final_robustness: "e797aabc4f4c469a3a4923ad08fc505b66fdbc86"
+  authorisation: "study_author_freeze"
+  registration_method: "public_git_tag"
+  no_result_contingent_changes: true
+  configuration_sha256:
+    analysis: "21a769c4e64eed35a630985e173da242f8ce779aeaf68923db19dcd4c1cf9063"
+    candidate_effective_analysis: "7bf829b2f636b6d5af2c5b09c5caca06a1cf987a8d38022afee7119424995a62"
+    simulation: "e30e4b6d36c31eeacbc32ee47e13555679d25b9e42b7bc7dcd6caa6584632f73"
+
+candidate_rule:
+  essential_gate: "H_i = D_i * O_i * M_i"
+  essential_checks:
+    - "record_adequacy"
+    - "reference_population_support"
+    - "estimator_action_agreement"
+  uncertainty_score: "S_i = (abs(tau_hat_i) - delta) / SE_hat_i"
+  retained_fraction_within_outer_fold: 0.80
+  final_gate: "G_i = H_i * U_i(0.80)"
+  failed_essential_check_can_be_rescued: false
+  deferred_action: "evidence_based_default_or_human_review"
+  deferral_means_treatment_delay: false
+
+primary_estimand:
+  metric: "material_unsafe_acceptance_population_denominator"
+  contrast: "C002_minus_uncertainty_only_at_exact_matched_coverage"
+  scenario_weighting: "equal_weight_per_scenario"
+  confidence_interval: "two_sided_95_percent_student_t_over_replicates"
+  support_rule: "upper_confidence_limit_below_zero"
+  interpretation: "negative_values_favour_C002"
+
+guardrails:
+  mean_coverage_floor: 0.25
+  utility_is_secondary: true
+  fairness_is_secondary_audit: true
+  weighted_fairness_composite: false
+  report_adverse_results: true
+
+stage_e_blinded_variance_pilot:
+  replicate_ids: [100000, 100024]
+  replicates_per_scenario: 25
+  permitted_outputs:
+    - "paired_primary_contrast_standard_deviation"
+    - "runtime"
+    - "memory"
+  prohibited_outputs:
+    - "mean_effect_estimates"
+    - "method_rankings"
+    - "group_differences"
+  primary_target_mcse_per_scenario: 0.0025
+  replicate_rule: "max(1000, max_scenario(ceil((pilot_sd/0.0025)^2)))"
+  maximum_replicates: 5000
+  permitted_post_pilot_changes:
+    - "monte_carlo_replicate_count"
+    - "computational_batching"
+  scientific_method_changes_allowed: false
+
+stage_e_completion:
+  status: "complete_blinded_variance_only"
+  completed_date: "2026-10-24"
+  pilot_code_commit: "525788bd24428a684ecc1941c7441e5ee60e9a72"
+  pilot_code_tag: "stage-e-pilot-code-v1.0"
+  pilot_configuration_combined_sha256: "fc46b71a41e3cf0827c2e044edff35f7cb7bc8be0d25fd29107ad4098a5baa44"
+  summary_sha256: "f9c28d5dfb1c0be2c4a8ea3769ae395d4263b919f7e5b936a063262b25271a15"
+  scenario_count: 10
+  total_pilot_replicates: 250
+  all_scenario_groups_passed: true
+  target_mcse_reachable_within_cap_for_all_scenarios: true
+  scientific_effect_results_exposed: false
+  locked_final_replicates_per_confirmatory_scenario: 1000
+  permitted_decision: "monte_carlo_replicate_count_only"
+
+stage_f_confirmatory_validation:
+  run_once: true
+  replicate_id_start: 300000
+  minimum_replicates_per_scenario: 1000
+  maximum_replicates_per_scenario: 5000
+  final_replicate_count: 1000
+  authorisation_tag: "stage-e-variance-complete-v1.0"
+  primary_scenarios:
+    - id: "confirmatory_v1__record_adequacy_n500"
+      defect: "record_adequacy"
+      sample_size: 500
+    - id: "confirmatory_v1__record_adequacy_n2000"
+      defect: "record_adequacy"
+      sample_size: 2000
+    - id: "confirmatory_v1__reference_support_n500"
+      defect: "reference_support"
+      sample_size: 500
+    - id: "confirmatory_v1__reference_support_n2000"
+      defect: "reference_support"
+      sample_size: 2000
+    - id: "confirmatory_v1__model_multiplicity_n500"
+      defect: "model_multiplicity"
+      sample_size: 500
+    - id: "confirmatory_v1__model_multiplicity_n2000"
+      defect: "model_multiplicity"
+      sample_size: 2000
+    - id: "confirmatory_v1__decision_uncertainty_n500"
+      defect: "decision_uncertainty"
+      sample_size: 500
+    - id: "confirmatory_v1__decision_uncertainty_n2000"
+      defect: "decision_uncertainty"
+      sample_size: 2000
+    - id: "confirmatory_v1__combined_n500"
+      defect: "combined"
+      sample_size: 500
+    - id: "confirmatory_v1__combined_n2000"
+      defect: "combined"
+      sample_size: 2000
+  common_parameters:
+    outcome_type: "binary"
+    baseline_shape: "nonlinear"
+    effect_strength: "moderate"
+    group_prevalence: 0.20
+    defect_allocation: "equal"
+    treatment_probability: 0.50
+
+secondary_analyses:
+  negative_control:
+    defects: ["none"]
+    sample_sizes: [500, 2000]
+    excluded_from_primary_contrast: true
+  mechanism:
+    comparison: "C002_minus_corresponding_leave_one_check_out_gate"
+    multiplicity_adjustment: "Holm_across_three_essential_checks"
+  fairness:
+    role: "safety_and_access_audit"
+    report_raw_group_differences: true
+    report_evidence_standardised_only_when_balance_passes: true
+    fairness_guarantee_claimed: false
+  robustness:
+    inferential_role: "secondary"
+    report_all_prespecified_variants: true
+
+prohibited_adaptations:
+  - "changing_C002_after_stage_e_or_stage_f_results"
+  - "changing_thresholds_or_retained_fraction"
+  - "dropping_an_unfavourable_scenario"
+  - "selecting_replicates_or_fold_seeds_by_result"
+  - "using_stage_c_estimates_as_confirmatory_evidence"
+  - "describing_simulation_validation_as_clinical_effectiveness"

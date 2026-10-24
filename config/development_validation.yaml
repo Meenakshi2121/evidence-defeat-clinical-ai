@@ -1,0 +1,121 @@
+schema_version: "0.2"
+status: "draft_prelock_amendment"
+adopted: "2026-10-14"
+purpose: "Permit transparent framework development while preserving an untouched validation phase"
+
+current_evidence_state:
+  scientific_performance_unblinded_in_this_repository: true
+  stage_c_scientific_unblinding_authorised: true
+  stage_a_and_b_outputs_are_diagnostic_only: true
+  rct_bench_patient_level_files_opened: false
+  confirmatory_validation_started: false
+
+phase_boundaries:
+  diagnostics:
+    stages: [stage_a, stage_b]
+    scientific_results_exposed: false
+    eligible_for_candidate_selection: false
+    eligible_for_confirmatory_evidence: false
+
+  development:
+    stage: stage_c
+    status: "ready_for_transparent_development"
+    scientific_results_exposed: true
+    eligible_for_confirmatory_evidence: false
+    permitted_data:
+      - "controlled_synthetic_development_bank"
+    prohibited_data:
+      - "reserved_validation_simulation_bank"
+      - "rct_bench_patient_level_files"
+      - "real_trial_outcomes"
+    permitted_adaptations:
+      - "check_definitions"
+      - "gate_logic"
+      - "thresholds"
+      - "learner_set"
+      - "population_default"
+      - "software_implementation"
+    development_bank_requirement:
+      specification_required_before_first_run: true
+      separate_scenario_ids_and_replicate_namespace: true
+      configuration_file: "config/development_bank.yaml"
+      candidate_configuration_file: "config/development_candidates.yaml"
+      author_reviewed_before_first_run: true
+      externally_reviewed: false
+
+  development_freeze:
+    stage: stage_d
+    requirements:
+      - "one_final_candidate_identifier"
+      - "clean_git_commit"
+      - "configuration_hashes"
+      - "complete_candidate_history"
+      - "written_selection_rationale"
+      - "supervisor_and_statistical_review"
+      - "registered_protocol_v1_0"
+
+  blinded_variance_pilot:
+    stage: stage_e
+    runs_after_development_freeze: true
+    permitted_disclosures:
+      - "paired_primary_contrast_standard_deviation"
+      - "runtime"
+      - "memory"
+    prohibited_disclosures:
+      - "mean_effect_estimates"
+      - "method_rankings"
+      - "group_differences"
+    adaptations_after_pilot:
+      - "monte_carlo_replicate_count"
+      - "computational_batching"
+    scientific_method_changes_allowed: false
+
+  independent_validation:
+    stage: stage_f
+    run_once_after_registration: true
+    development_data_reuse: false
+    sources:
+      reserved_validation_simulation_bank: "confirmatory_primary_safety_grid"
+      rct_shaped_semisynthetic: "unopened_until_development_freeze"
+      real_rct_outcomes: "unopened_until_development_freeze"
+    primary_metric: "material_unsafe_acceptance_population_denominator"
+    primary_contrast: "complete_gate_minus_uncertainty_only_at_matched_coverage"
+    confidence_interval: "two_sided_95_percent"
+    support_rule: "upper_confidence_limit_below_zero"
+    report_regardless_of_result: true
+    change_after_unblinding: "new_framework_version_and_new_independent_validation"
+
+development_audit:
+  candidate_log: "protocol/development_candidate_log_v0.2.md"
+  require_candidate_id: true
+  require_parent_candidate_id: true
+  require_pre_run_rationale: true
+  require_clean_git_commit: true
+  require_configuration_hashes: true
+  retain_all_candidate_results: true
+  retain_unsuccessful_candidates: true
+  prohibit_relabelling_as_confirmatory: true
+  mandatory_metrics:
+    - "material_unsafe_acceptance_population_denominator"
+    - "coverage"
+    - "deployed_policy_utility"
+    - "oracle_regret"
+    - "regret_relative_to_default"
+    - "raw_group_differences"
+    - "evidence_standardised_group_differences"
+    - "scenario_and_seed_stability"
+
+candidate_selection:
+  weighted_composite_score: false
+  inspect_complete_metric_profile: true
+  require_safety_utility_access_fairness_tradeoff: true
+  prefer_pareto_nondominated_candidates: true
+  simplicity_breaks_practical_ties: true
+  final_choice_requires_written_rationale: true
+  development_success_is_confirmatory_evidence: false
+
+fairness:
+  role: "safety_and_access_audit"
+  weighted_fairness_composite: false
+  report_raw_and_evidence_standardised_separately: true
+  aggregate_improvement_cannot_hide_group_harm: true
