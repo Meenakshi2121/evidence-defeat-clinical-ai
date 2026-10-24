@@ -55,3 +55,13 @@ poetry run evidence-defeat-validate pilot-batch
 Before execution, the runner verifies that the repository is clean, the
 `protocol-v1.0` tag is an ancestor of the current commit and all frozen files
 still match the tagged versions.
+
+## Completion
+
+Stage E was completed on 24 October 2026 using code commit
+`525788bd24428a684ecc1941c7441e5ee60e9a72`. All ten scenario groups passed,
+comprising 250 pilot replicates in total. The permitted variance-only rule
+selected the protocol minimum of 1,000 Stage F replicates per scenario. No
+mean effect, method ranking or group difference was exposed. The complete
+audit trail and hashes are recorded in
+`protocol/stage_e_variance_record_v1.0.md`.

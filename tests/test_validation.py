@@ -57,6 +57,32 @@ def test_committed_validation_plan_is_frozen_and_complete() -> None:
         )
         for sample_size in (500, 2000)
     }
+    completion = validation.document["stage_e_completion"]
+    stage_f = validation.document["stage_f_confirmatory_validation"]
+    assert completion["scientific_effect_results_exposed"] is False
+    assert completion["total_pilot_replicates"] == 250
+    assert completion["locked_final_replicates_per_confirmatory_scenario"] == 1000
+    assert stage_f["final_replicate_count"] == 1000
+    assert stage_f["authorisation_tag"] == "stage-e-variance-complete-v1.0"
+
+
+def test_stage_e_lock_rejects_a_changed_confirmatory_count() -> None:
+    project = load_project_config(PROJECT_ROOT)
+    development = load_development_config(PROJECT_ROOT, project=project)
+    original = load_validation_config(
+        PROJECT_ROOT,
+        project=project,
+        development=development,
+    )
+    changed = deepcopy(original.document)
+    changed["stage_f_confirmatory_validation"]["final_replicate_count"] = 1001
+
+    with pytest.raises(ValueError, match="final replicate count has changed"):
+        validate_validation_config(
+            project,
+            development,
+            ValidationConfig(changed),
+        )
 
 
 def test_changed_frozen_analysis_hash_is_rejected() -> None:

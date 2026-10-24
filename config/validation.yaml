@@ -65,12 +65,28 @@ stage_e_blinded_variance_pilot:
     - "computational_batching"
   scientific_method_changes_allowed: false
 
+stage_e_completion:
+  status: "complete_blinded_variance_only"
+  completed_date: "2026-10-24"
+  pilot_code_commit: "525788bd24428a684ecc1941c7441e5ee60e9a72"
+  pilot_code_tag: "stage-e-pilot-code-v1.0"
+  pilot_configuration_combined_sha256: "fc46b71a41e3cf0827c2e044edff35f7cb7bc8be0d25fd29107ad4098a5baa44"
+  summary_sha256: "f9c28d5dfb1c0be2c4a8ea3769ae395d4263b919f7e5b936a063262b25271a15"
+  scenario_count: 10
+  total_pilot_replicates: 250
+  all_scenario_groups_passed: true
+  target_mcse_reachable_within_cap_for_all_scenarios: true
+  scientific_effect_results_exposed: false
+  locked_final_replicates_per_confirmatory_scenario: 1000
+  permitted_decision: "monte_carlo_replicate_count_only"
+
 stage_f_confirmatory_validation:
   run_once: true
   replicate_id_start: 300000
   minimum_replicates_per_scenario: 1000
   maximum_replicates_per_scenario: 5000
-  final_replicate_count: "to_be_locked_from_stage_e_variance_only"
+  final_replicate_count: 1000
+  authorisation_tag: "stage-e-variance-complete-v1.0"
   primary_scenarios:
     - id: "confirmatory_v1__record_adequacy_n500"
       defect: "record_adequacy"

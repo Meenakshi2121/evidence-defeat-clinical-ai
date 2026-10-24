@@ -128,11 +128,13 @@ development boundary, but four of its five runs slightly favoured uncertainty-
 only deferral and one run strongly favoured C002. This seed sensitivity must be
 tested in independent validation.
 
-C002 is provisionally selected unchanged as the final development candidate
-and recommended for Stage D freeze, conditional on supervisor and statistical
-review. It is not yet frozen, registered, independently validated or ready for
-deployment. The independent validation bank and proposed multitrial data
-remain unopened, and no further threshold or architecture tuning is permitted.
+C002 was frozen unchanged as the final development candidate in public tag
+`protocol-v1.0`. The subsequent blinded Stage E variance pilot completed all
+ten scenario groups and 250 pilot replicates without exposing effect direction,
+method rankings or group differences. The prespecified variance rule selected
+the protocol minimum of 1,000 Stage F replicates per primary scenario. This is
+a precision-planning result, not evidence that C002 is effective. Stage F has
+not yet been run, and no confirmatory result exists.
 
 The dated development/validation boundary is defined in
 `protocol/development_validation_amendment_v0.2.md`. Protocol v0.1 remains as
@@ -192,20 +194,19 @@ The first timing unit is reviewed before authorising the `n=2,000` comparator
 and five bootstrap timing units. Stage B reports contain resource usage,
 invariant statuses and reproducibility fingerprints only.
 
-## Transparent Stage C development
+## Development and prospective validation status
 
 Stage C runs expose scientific simulation results and therefore require a
-clean, committed worktree. C001 and C002 have completed their authorised
-development tiers and must not be rerun or tuned. C002 is the provisional
-final development candidate. Its full results and adverse findings are
-recorded in the append-only candidate log, and its written selection rationale
-is in `protocol/c002_final_selection_rationale_v0.1.md`.
+clean, committed worktree. C001 and C002 completed their authorised development
+tiers and must not be rerun or tuned. C002's results, adverse findings and
+selection rationale remain in the append-only development record.
 
-The next step is independent supervisor and statistical review. Only after
-those reviews may Stage D freeze the candidate by clean commit and complete
-configuration hashes, close the candidate history, register protocol v1.0 and
-tag the frozen specification. Reserved validation simulations and real or
-semisynthetic trial data must remain unopened until that sequence is complete.
+Stage D froze C002, the primary estimand, success rule and validation grid in
+`protocol-v1.0`. Stage E then used only blinded paired-contrast variances to
+lock the Stage F count at 1,000 replicates in each of ten primary cells. The
+completion record is `protocol/stage_e_variance_record_v1.0.md`. The next step
+is the one-time Stage F confirmatory simulation; real and semisynthetic trial
+evaluations remain later validation layers and are not replaced by simulation.
 
 Development results may motivate a new child candidate only after its parent,
 exact change, rationale and falsification criteria are appended to the

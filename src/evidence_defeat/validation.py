@@ -181,6 +181,30 @@ def validate_validation_config(
     if _need(pilot, "scientific_method_changes_allowed") is not False:
         raise ValueError("Stage E cannot alter the scientific method")
 
+    completion = _need(document, "stage_e_completion")
+    expected_completion = {
+        "status": "complete_blinded_variance_only",
+        "completed_date": "2026-10-24",
+        "pilot_code_commit": "525788bd24428a684ecc1941c7441e5ee60e9a72",
+        "pilot_code_tag": "stage-e-pilot-code-v1.0",
+        "pilot_configuration_combined_sha256": (
+            "fc46b71a41e3cf0827c2e044edff35f7cb7bc8be0d25fd29107ad4098a5baa44"
+        ),
+        "summary_sha256": (
+            "f9c28d5dfb1c0be2c4a8ea3769ae395d4263b919f7e5b936a063262b25271a15"
+        ),
+        "scenario_count": 10,
+        "total_pilot_replicates": 250,
+        "all_scenario_groups_passed": True,
+        "target_mcse_reachable_within_cap_for_all_scenarios": True,
+        "scientific_effect_results_exposed": False,
+        "locked_final_replicates_per_confirmatory_scenario": 1000,
+        "permitted_decision": "monte_carlo_replicate_count_only",
+    }
+    for key, expected in expected_completion.items():
+        if _need(completion, key) != expected:
+            raise ValueError(f"Stage E completion record changed: {key}")
+
     stage_f = _need(document, "stage_f_confirmatory_validation")
     raw_scenarios = _need(stage_f, "primary_scenarios")
     if not isinstance(raw_scenarios, list) or len(raw_scenarios) != 10:
@@ -207,6 +231,10 @@ def validate_validation_config(
         raise ValueError("Stage F minimum replicate count has changed")
     if _need(stage_f, "maximum_replicates_per_scenario") != 5000:
         raise ValueError("Stage F maximum replicate count has changed")
+    if _need(stage_f, "final_replicate_count") != 1000:
+        raise ValueError("Stage F final replicate count has changed")
+    if _need(stage_f, "authorisation_tag") != "stage-e-variance-complete-v1.0":
+        raise ValueError("Stage F authorisation tag has changed")
 
 
 def validation_configuration_hashes(

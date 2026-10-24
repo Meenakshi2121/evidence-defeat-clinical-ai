@@ -38,3 +38,15 @@ coverage, unsafe acceptance and utility are reported separately;
 evidence-standardised comparisons are conditional on balance adequacy. No
 weighted fairness composite is used because a favourable aggregate score could
 hide harm or loss of access in one group.
+
+## Post-freeze implementation record: Stage E replicate-count decision
+
+**Date recorded:** 24 October 2026
+
+The blinded Stage E variance pilot completed all ten scenario groups and 250
+pilot replicates without exposing mean effects, method rankings or group
+differences. Applying the prospectively specified rule selected 1,000 Stage F
+replicates per scenario, the protocol minimum. This is an authorised
+computational decision under protocol v1.0, not a change to C002, the estimand,
+scenarios, thresholds, comparators, outcomes or success criterion. Stage F may
+begin only from the public tag `stage-e-variance-complete-v1.0`.
