@@ -1,0 +1,241 @@
+schema_version: "0.1"
+status: "draft_prelock"
+created: "2026-10-14"
+purpose: "Known-truth validation of evidence-defeat checks before real-outcome analysis"
+
+reproducibility:
+  master_seed: 20261013
+  replicate_seed_rule: "int.from_bytes(first_8_bytes(sha256(master_seed|scenario_id|replicate_id)), big) modulo 2^32"
+  independent_streams:
+    - group
+    - covariates
+    - defect_flags
+    - treatment
+    - outcome
+  save_latent_complete_covariates: true
+  save_true_conditional_means: true
+  save_true_treatment_effect: true
+  save_defect_flags: true
+
+population:
+  covariate_count: 10
+  covariate_distribution: "independent_standard_normal"
+  covariate_names: [x1, x2, x3, x4, x5, x6, x7, x8, x9, x10]
+  group_name: "group"
+  group_distribution: "Bernoulli(group_prevalence)"
+  group_included_as_model_covariate: true
+  group_always_observed: true
+  treatment_distribution: "Bernoulli(0.5)"
+  treatment_independent_of_covariates_group_and_defects: true
+
+materiality:
+  binary_utility_delta: 0.02
+  continuous_utility_delta_training_sd: 0.10
+  binary_sensitivities: [0.01, 0.05]
+  continuous_sensitivities_training_sd: [0.05, 0.20]
+
+baseline_utility:
+  binary:
+    link: "mu0 = 0.10 + 0.70 * expit(eta)"
+    linear_eta: "-0.40 + 0.45*x1 - 0.35*x2 + 0.25*x3 + 0.20*x4"
+    nonlinear_eta: "-0.40 + 0.55*sin(x1) + 0.35*(x2^2-1)/sqrt(2) - 0.40*x3*x4 + 0.25*I(x5>0)"
+    treated_mean: "mu1 = clip(mu0 + tau, 0.01, 0.99)"
+    observed_outcome: "Y ~ Bernoulli(mu_A)"
+    utility_orientation: "one_is_better"
+  continuous:
+    linear_mu0: "0.50*(-0.40 + 0.45*x1 - 0.35*x2 + 0.25*x3 + 0.20*x4)"
+    nonlinear_mu0: "0.50*(-0.40 + 0.55*sin(x1) + 0.35*(x2^2-1)/sqrt(2) - 0.40*x3*x4 + 0.25*I(x5>0))"
+    treated_mean: "mu1 = mu0 + tau"
+    observed_outcome: "Y = mu_A + epsilon; epsilon ~ Normal(0,1)"
+    fold_scaling: "divide Y, mu0, mu1, and tau by the outer-training outcome SD"
+    utility_orientation: "higher_is_better"
+  truth_after_binary_clipping: "tau_true = mu1 - mu0; all truth metrics use tau_true rather than the pre-clipping target surface"
+
+effect_modifiers:
+  h_linear: "(x1+x2)/sqrt(2)"
+  h_nonlinear: "(sin(x1) + 0.5*(x2^2-1)/sqrt(2) + 0.5*x3*x4) / sqrt((1-exp(-2))/2 + 0.25 + 0.25)"
+
+treatment_effects:
+  binary:
+    absent: "tau = 0.04"
+    moderate: "tau = clip(0.01 + 0.05*h_linear, -0.12, 0.12)"
+    strong: "tau = clip(0.01 + 0.09*h_nonlinear, -0.18, 0.18)"
+  continuous:
+    conversion_from_binary_surface: "tau_continuous = 4 * tau_binary"
+
+defect_allocation:
+  equal:
+    rule: "P(R_j=1|group=0) = P(R_j=1|group=1) = prevalence_j"
+  group_concentrated:
+    concentration_ratio: 4.0
+    rule: "p0 = prevalence_j/((1-group_prevalence)+4*group_prevalence); p1 = 4*p0"
+    constraint: "overall prevalence remains prevalence_j"
+
+single_defects:
+  record_adequacy:
+    flag: "R_D ~ Bernoulli(p_group)"
+    overall_prevalence: 0.20
+    observed_change: "if R_D=1, set x1, x2, and x3 to missing after outcome truth is generated"
+    true_effect_override_binary: "if R_D=1, tau = 0.08 if latent_x1>-0.50 else -0.08"
+    true_effect_override_continuous: "four times the binary override"
+    rationale: "three of ten clinical covariates missing gives 70% completeness and conceals the action-defining value"
+  reference_support:
+    flag: "R_O ~ Bernoulli(p_group)"
+    overall_prevalence: 0.02
+    observed_change: "if R_O=1, add 4.0 to latent x1, x2, and x3"
+    true_effect_override_binary: "if R_O=1, tau = -0.08"
+    true_effect_override_continuous: "if R_O=1, tau = -0.32"
+    rationale: "a rare separated covariate component reverses the relation suggested by the main population"
+  model_multiplicity:
+    flag_equal: "R_M = I(x5 > normal_ppf(1-0.25))"
+    flag_group_concentrated: "R_M = I(x5 > normal_ppf(1-p_group))"
+    overall_prevalence: 0.25
+    true_effect_override_binary: "if R_M=1, tau = 0.10 when x1*x2>0 and -0.06 otherwise"
+    true_effect_override_continuous: "four times the binary override"
+    rationale: "the local quadrant interaction is absent from the prespecified additive interaction model"
+  decision_uncertainty:
+    flag_equal: "R_U = I(abs(x6) <= normal_ppf((1+0.30)/2))"
+    flag_group_concentrated: "R_U = I(abs(x6) <= normal_ppf((1+p_group)/2))"
+    overall_prevalence: 0.30
+    outside_region_effect_binary: "tau = 0.08 if x1>=0 else -0.08"
+    true_effect_override_binary: "if R_U=1, tau = 0.03 if x1>=0 else -0.03"
+    true_effect_override_continuous: "four times the binary values"
+    rationale: "the optimal direction is defined but benefit is close to the materiality boundary"
+
+combined_defects:
+  prevalence:
+    record_adequacy: 0.15
+    reference_support: 0.02
+    model_multiplicity: 0.20
+    decision_uncertainty: 0.25
+  generation: "generate all four flags independently conditional on group before applying deterministic region rules"
+  observed_changes: "apply both record missingness and support shift whenever their flags are one"
+  effect_override_priority:
+    - reference_support
+    - record_adequacy
+    - model_multiplicity
+    - decision_uncertainty
+    - base_moderate_effect
+  note: "all generated flags are retained even when a higher-priority effect override determines tau"
+
+clean_control:
+  structural_defects: "none"
+  missingness: "none"
+  support_mixture: "none"
+  effect_binary: "tau = 0.06 if x1>=0 else -0.06"
+  effect_continuous: "tau = 0.24 if x1>=0 else -0.24"
+  expected_interpretation: "tests false or unnecessary deferral; excluded from the primary superiority contrast"
+
+scenario_defaults:
+  outcome_type: "binary"
+  baseline_shape: "nonlinear"
+  effect_strength: "moderate"
+  group_prevalence: 0.20
+  defect_allocation: "equal"
+  treatment_probability: 0.50
+
+confirmatory_primary_safety_grid:
+  estimand_weighting: "equal_weight_per_scenario"
+  include_defects:
+    - record_adequacy
+    - reference_support
+    - model_multiplicity
+    - decision_uncertainty
+    - combined
+  sample_sizes: [500, 2000]
+  outcome_type: "binary"
+  baseline_shape: "nonlinear"
+  effect_strength: "moderate"
+  group_prevalence: 0.20
+  defect_allocation: "equal"
+  scenario_count: 10
+  planned_replicates_per_scenario: 1000
+  primary_contrast: "complete_gate_minus_uncertainty_only_at_exact_matched_coverage"
+
+confirmatory_mechanism_grid:
+  reuse_primary_scenarios: true
+  include_single_defects:
+    - record_adequacy
+    - reference_support
+    - model_multiplicity
+    - decision_uncertainty
+  contrast: "complete_gate_minus_corresponding_leave_one_check_out_gate"
+  multiplicity_adjustment: "Holm across four check-specific hypotheses"
+
+negative_control_grid:
+  sample_sizes: [500, 2000]
+  outcome_type: "binary"
+  baseline_shape: "nonlinear"
+  group_prevalence: 0.20
+  scenario_count: 2
+  excluded_from_primary_contrast: true
+
+fairness_grid:
+  sample_size: 2000
+  outcome_type: "binary"
+  baseline_shape: "nonlinear"
+  effect_strength: "moderate"
+  group_prevalences: [0.20, 0.50]
+  defects:
+    - record_adequacy
+    - reference_support
+    - combined
+  allocations: [equal, group_concentrated]
+  reuse_matching_primary_scenarios: true
+  inferential_role: "secondary_audit"
+  planned_replicates_per_unique_scenario: 1000
+
+robustness_grid:
+  one_factor_at_a_time_reference: "n=2000, combined defect, binary outcome, nonlinear baseline, moderate effect, group prevalence 0.20, equal allocation"
+  variants:
+    - id: "linear_baseline"
+      baseline_shape: "linear"
+    - id: "absent_heterogeneity"
+      defect: "none"
+      effect_strength: "absent"
+    - id: "strong_heterogeneity"
+      effect_strength: "strong"
+    - id: "continuous_outcome"
+      outcome_type: "continuous"
+    - id: "group_prevalence_50"
+      group_prevalence: 0.50
+    - id: "group_concentrated_combined"
+      defect_allocation: "group_concentrated"
+    - id: "group_prognostic_shift"
+      baseline_group_coefficient: 0.20
+    - id: "record_missingness_outcome_independent"
+      defect: "record_adequacy"
+      record_effect_override: false
+  inferential_role: "secondary_robustness"
+
+truth_and_metrics:
+  optimal_action: "I(tau>0)"
+  materially_actionable: "abs(tau)>=delta_on_analysis_scale"
+  primary_metric: "material_unsafe_acceptance_population_denominator"
+  always_report:
+    - coverage
+    - materially_wrong_rate_among_accepted_actionable_cases
+    - deployed_policy_utility
+    - oracle_regret
+    - regret_relative_to_default
+    - check_failure_rates
+  defect_recovery_diagnostics:
+    - "sensitivity and specificity of each check for its generated defect flag"
+    - "pairwise overlap of generated defects and check failures"
+    - "gate-status stability across prespecified fold seeds"
+
+monte_carlo:
+  confidence_level: 0.95
+  report_mcse: true
+  primary_minimum_replicates: 1000
+  precision_amendment_uses: "variance and runtime only, never method ranking or estimated mean contrast"
+  primary_target_mcse_per_scenario: 0.0025
+  secondary_target_mcse: 0.0050
+  maximum_replicates_without_new_review: 5000
+
+prohibited_adaptation:
+  - "changing defect prevalence because the complete gate performs poorly"
+  - "changing coefficients to increase estimator disagreement after method comparisons are viewed"
+  - "dropping a scenario because it is unfavourable"
+  - "selecting a fold seed or replicate subset by result"
+  - "using proof-of-concept estimates as confirmatory evidence"

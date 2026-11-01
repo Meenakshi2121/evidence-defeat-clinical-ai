@@ -1,0 +1,76 @@
+schema_version: "0.1"
+status: "stage_c_candidate_register"
+created: "2026-10-15"
+selection_rule: "complete_metric_profile_then_pareto_review_with_simplicity_as_tiebreaker"
+weighted_composite_score: false
+
+allowed_analysis_override_paths:
+  - "gate.record_adequacy.observed_fraction_minimum"
+  - "gate.reference_support.pass_quantile"
+  - "gate.multiplicity.minimum_estimators_supporting_primary_action"
+  - "gate.uncertainty.essential"
+  - "gate.uncertainty.graded_filter.enabled"
+  - "gate.uncertainty.graded_filter.retention_fraction"
+  - "learners.primary.interval_alpha_primary"
+
+candidates:
+  C000:
+    parent_id: null
+    status: "rejected"
+    label: "Baseline four-check non-compensatory gate"
+    rationale: "Establish the development-bank baseline before any adaptation."
+    intended_change: "No change from the v0.1 four-check gate."
+    expected_benefit: "Distinct evidence defects should reduce unsafe accepted recommendations beyond uncertainty-only deferral at matched coverage."
+    possible_failure_mode: "Additional checks may mainly reduce access without concentrating safety gains."
+    falsification_metrics:
+      - "primary unsafe-acceptance contrast is non-negative"
+      - "regret relative to default increases materially"
+      - "group harms remain after evidence standardisation"
+    analysis_overrides: {}
+    authorised_tiers: ["screening"]
+    complexity_rank: 1
+
+  C001:
+    parent_id: "C000"
+    status: "rejected"
+    label: "Three-check Nyaya evidence-defeat gate"
+    rationale: "C000 showed that the binary certainty condition dominated acceptance and made the complete gate nearly identical to an uncertainty-only rule. C001 separates the Nyaya-inspired evidence-defeat architecture from its uncertainty comparator."
+    intended_change: "Retain record adequacy, reference support and model multiplicity as essential non-compensatory checks; continue computing decision uncertainty, but exclude it from the complete gate and retain uncertainty-only deferral as the external comparator at exact matched coverage."
+    expected_benefit: "Restore practically meaningful access to individualisation and test whether distinct evidence defects concentrate unsafe recommendations beyond uncertainty alone."
+    possible_failure_mode: "The three-check gate may increase coverage without reducing unsafe acceptance relative to uncertainty-only deferral, and model multiplicity may remain a weak discriminator."
+    falsification_metrics:
+      - "primary unsafe-acceptance contrast is non-negative"
+      - "regret relative to the default increases materially"
+      - "coverage gains are accompanied by unstable or harmful group differences"
+      - "model-multiplicity defect recovery remains weak"
+    analysis_overrides:
+      gate.uncertainty.essential: false
+    authorised_tiers:
+      - "screening"
+      - "fairness_stress"
+      - "finalist_robustness"
+    complexity_rank: 1
+
+  C002:
+    parent_id: "C001"
+    status: "finalist"
+    label: "Hierarchical evidence-defeat and graded-uncertainty gate"
+    rationale: "C001 improved safety when generated evidence defects were present but was inferior to uncertainty-only deferral in the no-defect scenario. C002 therefore preserves the non-compensatory Nyaya-inspired evidence-defeat conditions while adding a separate graded uncertainty filter that cannot rescue a failed evidence check."
+    intended_change: "First require record adequacy, reference support and model multiplicity. Then retain only rows in the highest 80 percent of the prespecified uncertainty ranking within each held-out fold. Continue comparing with uncertainty-only deferral at the exact final C002 coverage. No learner, evidence-check threshold, outcome, default policy, fairness rule or materiality margin changes."
+    expected_benefit: "Preserve C001's protection against distinct evidence defects while filtering weak recommendations in evidence-clean settings, without returning to C000's near-zero coverage caused by a strict confidence-interval pass rule."
+    possible_failure_mode: "The graded filter may reduce access without eliminating C001's no-defect disadvantage, or it may weaken the defect-present safety advantage and widen group access gaps."
+    falsification_metrics:
+      - "the pooled defect-present unsafe-acceptance contrast against matched uncertainty-only deferral is non-negative"
+      - "the no-defect unsafe-acceptance disadvantage exceeds 0.005"
+      - "mean coverage falls below 0.25 in any primary screening scenario"
+      - "deployed utility is materially worse than the population default"
+      - "safety gains are accompanied by unstable or harmful group differences"
+    analysis_overrides:
+      gate.uncertainty.essential: false
+      gate.uncertainty.graded_filter.enabled: true
+      gate.uncertainty.graded_filter.retention_fraction: 0.80
+    authorised_tiers:
+      - "revision_screening"
+      - "revision_fairness_stress"
+      - "revision_finalist_robustness"
+    complexity_rank: 2

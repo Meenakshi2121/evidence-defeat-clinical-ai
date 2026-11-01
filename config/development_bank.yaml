@@ -1,0 +1,389 @@
+schema_version: "0.1"
+status: "committed_for_stage_c_development"
+created: "2026-10-15"
+namespace: "stage_c_dev_v0_1"
+scientific_role: "exploratory_method_development_only"
+eligible_for_confirmatory_evidence: false
+external_reviewed: false
+
+separation:
+  permitted_source: "controlled_synthetic_development_bank"
+  scenario_id_prefix: "dev_v0_1__"
+  replicate_id_minimum: 200000
+  reserved_validation_grid_access: false
+  rct_bench_patient_level_access: false
+  real_trial_outcome_access: false
+
+reporting:
+  output_root: "results/development/stage-c"
+  require_clean_git: true
+  process_isolation_per_run: true
+  retain_every_candidate_and_run: true
+  overwrite_existing_output: false
+
+tiers:
+  screening:
+    purpose: "Fast comparison of every declared candidate across each defect mechanism"
+    candidate_scope: "all_candidates"
+    replicate_ids: [200000, 200001, 200002, 200003, 200004, 200005, 200006, 200007, 200008, 200009]
+    scenarios:
+      - id: "dev_v0_1__screen_clean_n500"
+        sample_size: 500
+        defect: "clean_control"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__screen_record_n500"
+        sample_size: 500
+        defect: "record_adequacy"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__screen_support_n500"
+        sample_size: 500
+        defect: "reference_support"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__screen_multiplicity_n500"
+        sample_size: 500
+        defect: "model_multiplicity"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__screen_uncertainty_n500"
+        sample_size: 500
+        defect: "decision_uncertainty"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__screen_combined_n500"
+        sample_size: 500
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+
+  fairness_stress:
+    purpose: "Audit safety and access when evidence defects are concentrated by group"
+    candidate_scope: "retained_candidates_only"
+    replicate_ids: [210000, 210001, 210002, 210003, 210004]
+    scenarios:
+      - id: "dev_v0_1__fair_record_g20_n2000"
+        sample_size: 2000
+        defect: "record_adequacy"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__fair_record_g50_n2000"
+        sample_size: 2000
+        defect: "record_adequacy"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.50
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__fair_support_g20_n2000"
+        sample_size: 2000
+        defect: "reference_support"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__fair_support_g50_n2000"
+        sample_size: 2000
+        defect: "reference_support"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.50
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__fair_combined_g20_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__fair_combined_g50_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.50
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+
+  finalist_robustness:
+    purpose: "Challenge finalists under prespecified distributional and outcome variations"
+    candidate_scope: "finalists_only"
+    replicate_ids: [220000, 220001, 220002, 220003, 220004]
+    scenarios:
+      - id: "dev_v0_1__robust_linear_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "linear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__robust_absent_n2000"
+        sample_size: 2000
+        defect: "none"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "absent"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__robust_strong_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "strong"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__robust_continuous_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "continuous"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__robust_group_shift_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.20
+
+  revision_screening:
+    purpose: "Fresh C002 screening after the C001 robustness decision"
+    candidate_scope: "all_candidates"
+    replicate_ids: [230000, 230001, 230002, 230003, 230004]
+    scenarios:
+      - id: "dev_v0_1__revision_clean_n1000"
+        sample_size: 1000
+        defect: "clean_control"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_absent_n1000"
+        sample_size: 1000
+        defect: "none"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "absent"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_record_n1000"
+        sample_size: 1000
+        defect: "record_adequacy"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_support_n1000"
+        sample_size: 1000
+        defect: "reference_support"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_multiplicity_n1000"
+        sample_size: 1000
+        defect: "model_multiplicity"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_uncertainty_n1000"
+        sample_size: 1000
+        defect: "decision_uncertainty"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_combined_n1000"
+        sample_size: 1000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+
+  revision_fairness_stress:
+    purpose: "Fresh C002 fairness audit if revision screening supports retention"
+    candidate_scope: "retained_candidates_only"
+    replicate_ids: [240000, 240001, 240002, 240003, 240004]
+    scenarios:
+      - id: "dev_v0_1__revision_fair_record_g20_n2000"
+        sample_size: 2000
+        defect: "record_adequacy"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_fair_record_g50_n2000"
+        sample_size: 2000
+        defect: "record_adequacy"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.50
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_fair_support_g20_n2000"
+        sample_size: 2000
+        defect: "reference_support"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_fair_support_g50_n2000"
+        sample_size: 2000
+        defect: "reference_support"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.50
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_fair_combined_g20_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_fair_combined_g50_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.50
+        defect_allocation: "group_concentrated"
+        group_prognostic_coefficient: 0.0
+
+  revision_finalist_robustness:
+    purpose: "Fresh C002 robustness challenge if promoted to finalist"
+    candidate_scope: "finalists_only"
+    replicate_ids: [250000, 250001, 250002, 250003, 250004]
+    scenarios:
+      - id: "dev_v0_1__revision_robust_linear_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "linear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_robust_absent_n2000"
+        sample_size: 2000
+        defect: "none"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "absent"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_robust_strong_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "strong"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_robust_continuous_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "continuous"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.0
+      - id: "dev_v0_1__revision_robust_group_shift_n2000"
+        sample_size: 2000
+        defect: "combined"
+        outcome_type: "binary"
+        baseline_shape: "nonlinear"
+        effect_strength: "moderate"
+        group_prevalence: 0.20
+        defect_allocation: "equal"
+        group_prognostic_coefficient: 0.20
+
+mandatory_outputs:
+  - "material_unsafe_acceptance_population_denominator"
+  - "coverage"
+  - "deployed_policy_utility"
+  - "oracle_regret"
+  - "regret_relative_to_default"
+  - "check_recovery"
+  - "raw_group_differences"
+  - "evidence_standardised_group_differences"
+  - "scenario_and_seed_stability"
+
+prohibited_outputs:
+  - "weighted_fairness_composite"
+  - "single_weighted_candidate_score"
